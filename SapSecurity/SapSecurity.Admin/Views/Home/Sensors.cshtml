@@ -36,16 +36,16 @@
                             <p> <span>@item.GroupTitle</span>/<span>@item.ZoneTitle</span>/<span>@item.SensorName</span></p>
                         </td>
                         <td>
-                            <span>@item.Status.ToString()</span>
+                            <span id="senS_@item.Id">@item.Status.ToString()</span>
                         </td>
                         <td>
-                            <span class="badge bg-primary rounded-pill">@item.SensPercent</span>
+                            <span class="badge bg-primary rounded-pill" id="senP_@item.Id">@item.SensPercent</span>
                         </td>
                         <td>
-                            <span>-</span>
+                            <span id="sen_@item.Identifier">-</span>
                         </td>
                         <td>
-                            <span>-</span>
+                            <span id="alv_@item.Identifier">-</span>
                         </td>
                     </tr>
                 }
@@ -55,9 +55,97 @@
 </div>
 
 @section Scripts
-{
+    {
     <script>
-var socket = new WebSocket("ws://109.122.199.199/websocket");
-socket.on
+        webSocket();
+        function webSocket() {
+            var socket = new WebSocket("ws://109.122.199.199:7080/websocket");
+            socket.onopen = function(e) {
+                var userId = '@ViewBag.UId';
+                console.log('send');
+                socket.send('<AId>' + userId + '</AId>');
+            }
+            socket.onmessage = function(data) {
+                var message = data.data;
+                if (message.includes('<Adm>')) {
+                    SetSensorValue(message);
+                }
+
+                if (message.includes('<SNo>')) {
+                    SetSensorPercent(message);
+                }
+
+                if (message.includes('<Adl>')) {
+                    SetSensorAlive(message)
+                }
+                console.log(data);
+            }
+            socket.onerror = function(data) {
+                console.log(data);
+            }
+            socket.onclose = function(data) {
+                console.log(data);
+            }
+        }
+
+        function SetSensorPercent(message) {
+            var sp = message.split('<SNo>');
+            for (var i = 0; i < sp.length; i++) {
+                var t = sp[i];
+                if (t.includes('</SNo>')) {
+                    t = t.replace('</SNo>', '');
+                    t = t.replace('<SNo>', '');
+                    var t2 = t.split(',');
+                    if (t2.length == 2) {
+                        var sId = t2[0];
+                        var status = t2[1];
+                        var percent = t2[1];
+                        var statusName = GetStatusName(status);
+                        document.getElementById('senS_' + sId).innerHTML = status;
+                        document.getElementById('senP_' + sId).innerHTML = percent;
+                    }
+                }
+            }
+        }
+        function GetStatusName(status) {
+
+            switch (Number(status)) {
+                case 1: return "Active";
+                case 2: return "DeActive";
+                case 3: return "Warning";
+                case 4: return "Danger";
+            }
+            return "";
+        }
+
+        function SetSensorAlive(message) {
+            message = message.replace('</Adl>', '');
+            message = message.replace('<Adl>', '');
+            var t2 = message.split(',');
+            if (t2.length == 2) {
+                var sId = t2[0];
+                var val = t2[1];
+                document.getElementById('alv_' + sId).innerHTML = val;
+            }
+        }
+        function SetSensorValue(message) {
+            message = message.replace('</Adm>', '');
+            message = message.replace('<Adm>', '');
+            var sp = message.split('<Sen>');
+            for (var i = 0; i < sp.length; i++) {
+                var t = sp[i];
+                if (t.includes('</Sen>')) {
+                    t = t.replace('</Sen>', '');
+                    t = t.replace('<Sen>', '');
+                    var t2 = t.split(',');
+                    if (t2.length == 2) {
+                        var sId = t2[0];
+                        var val = t2[1];
+                        document.getElementById('sen_' + sId).innerHTML = val;
+                    }
+                }
+            }
+        }
+
     </script>
 }

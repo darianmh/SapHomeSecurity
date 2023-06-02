@@ -33,7 +33,8 @@ public class Mapper : IMapper
             SensorName = model.Title,
             SensPercent = sensPercent,
             IconDanger = model.SensorGroup.ImagePathDanger,
-            IconSafe = model.SensorGroup.SafeImagePath
+            IconSafe = model.SensorGroup.SafeImagePath,
+            Identifier = model.Identifier
         };
     }
 

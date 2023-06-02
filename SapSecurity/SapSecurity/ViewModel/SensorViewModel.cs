@@ -11,6 +11,7 @@ public class SensorViewModel
     public double? SensValue { get; set; }
     public bool IsDigital { get; set; }
     public int Id { get; set; }
+    public string Identifier { get; set; }
     public string SensorName { get; set; }
     public string GroupImagePath { get; set; }
     public int SensPercent { get; set; }

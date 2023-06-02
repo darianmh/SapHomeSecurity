@@ -27,6 +27,7 @@ namespace SapSecurity.Admin.Controllers
 
         public async Task<IActionResult> Sensors(string userId)
         {
+            ViewBag.UId = userId;
             var sensors = await _sensorDetailService.GetAllSensors(userId);
             return View(sensors);
         }

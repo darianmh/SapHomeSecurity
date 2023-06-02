@@ -69,7 +69,7 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
                     //send message to admin
                     await userWebSocketManager.SendMessage(message, SocketMessageType.Adm, sensor.UserId);
                     //send alive time to admin
-                    await userWebSocketManager.SendMessage(DateTime.Now.ToString("T"), SocketMessageType.Adl, sensor.UserId);
+                    await userWebSocketManager.SendMessage($"{sensorId},{DateTime.Now:T}", SocketMessageType.Adl, sensor.UserId);
                 }
             }
             else

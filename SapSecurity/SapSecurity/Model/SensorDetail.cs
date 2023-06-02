@@ -23,6 +23,10 @@ public class SensorDetail : BaseEntity
     public bool IsActive { get; set; }
     public string Title { get; set; }
     public int? Weight { get; set; }
+    /// <summary>
+    /// value when sensor is working Properly
+    /// </summary>
+    public int? NeutralValue { get; set; }
 
     //np
     [ForeignKey("SensorGroupId")]

@@ -61,11 +61,14 @@ public class Mapper : IMapper
 
     public SensorInfoModel MapInfo(SensorDetail sensor)
     {
+        var neutralValue = sensor.NeutralValue;
+        if (neutralValue == null) neutralValue = sensor.SensorGroup.NeutralValue;
+        if (neutralValue == null) neutralValue = 0;
         return new SensorInfoModel()
         {
             SensorIdentifier = sensor.Identifier,
             GroupId = sensor.SensorGroupId,
-            NeutralValue = sensor.SensorGroup.NeutralValue ?? 0,
+            NeutralValue = (int)neutralValue,
             SensorId = sensor.Id,
             UserId = sensor.UserId,
             Weight = sensor.Weight ?? sensor.SensorGroup.Weight,

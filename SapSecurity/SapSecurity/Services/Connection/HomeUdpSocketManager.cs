@@ -52,10 +52,11 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
             var sensorDetailService = scope.ServiceProvider.GetService<ISensorDetailService>();
             var sensorLogService = scope.ServiceProvider.GetService<ISensorLogService>();
             var securityManager = scope.ServiceProvider.GetService<ISecurityManager>();
-            if (securityManager == null || sensorDetailService == null || sensorLogService == null) return;
+            var userWebSocketManager = scope.ServiceProvider.GetService<IUserWebSocketManager>();
+            if (securityManager == null || sensorDetailService == null || sensorLogService == null || userWebSocketManager == null) return;
             if (message.Contains($"<{SocketMessageType.Sen}>"))
             {
-                await LogAsync(socket, endPoint, message, sensorDetailService, sensorLogService, securityManager);
+                await LogAsync(socket, endPoint, message, sensorDetailService, sensorLogService, securityManager, userWebSocketManager);
             }
             else if (message.Contains($"<{SocketMessageType.Act}>"))
             {
@@ -63,7 +64,13 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
                 var sensorId = _socketManager.ReadMessage(message, SocketMessageType.Act.ToString());
                 var sensor = await sensorDetailService.GetSensorInfoByIdentifier(sensorId);
                 if (sensor != null)
+                {
                     IndexManager.SetAliveMessage(sensor.SensorId);
+                    //send message to admin
+                    await userWebSocketManager.SendMessage(message, SocketMessageType.Adm, sensor.UserId);
+                    //send alive time to admin
+                    await userWebSocketManager.SendMessage(DateTime.Now.ToString("T"), SocketMessageType.Adl, sensor.UserId);
+                }
             }
             else
             {
@@ -89,8 +96,11 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
     /// <param name="sensorDetailService"></param>
     /// <param name="sensorLogService"></param>
     /// <param name="securityManager"></param>
+    /// <param name="userWebSocketManager"></param>
     /// <returns></returns>
-    private async Task LogAsync(UdpClient socket, IPEndPoint endPoint, string message, ISensorDetailService sensorDetailService, ISensorLogService sensorLogService, ISecurityManager securityManager)
+    private async Task LogAsync(UdpClient socket, IPEndPoint endPoint, string message,
+        ISensorDetailService sensorDetailService, ISensorLogService sensorLogService, ISecurityManager securityManager,
+        IUserWebSocketManager userWebSocketManager)
     {
         try
         {
@@ -111,11 +121,16 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
                     Console.WriteLine($"invalid sensor: {sensorId}, value: {log}");
                     continue;
                 }
+                //send message to admin
+                await userWebSocketManager.SendMessage(message, SocketMessageType.Adm, sensor.UserId);
                 var check = int.TryParse(log, out var status);
                 if (check)
                 {
                     lastSensor = sensor;
                     lastValue = status;
+
+                    //send alive time to admin
+                    await userWebSocketManager.SendMessage($"{sensorId},{DateTime.Now:T}", SocketMessageType.Adl, sensor.UserId);
                     IndexManager.SetAliveMessage(sensor.SensorId);
                     await sensorLogService.LogAsync(status, sensor.SensorId);
                 }

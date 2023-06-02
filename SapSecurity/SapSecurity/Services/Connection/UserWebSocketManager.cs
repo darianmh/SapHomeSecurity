@@ -110,8 +110,14 @@ public class UserWebSocketManager : ConnectionManager, IUserWebSocketManager
             {
                 var token = _socketManager.ReadMessage(message, SocketMessageType.UId.ToString());
                 if (token == null) return;
-                Console.WriteLine("web socket connect");
                 var id = _applicationUserService.GetUserId(token);
+                if (id == null) return;
+                SetUserInfo(id, socket, socketId);
+                ConsoleExtension.WriteAppInfo($"userId: {id} connected");
+            }
+            else if (message.StartsWith($"<{SocketMessageType.AId}>"))
+            {
+                var id = _socketManager.ReadMessage(message, SocketMessageType.AId.ToString());
                 if (id == null) return;
                 SetUserInfo(id, socket, socketId);
                 ConsoleExtension.WriteAppInfo($"userId: {id} connected");

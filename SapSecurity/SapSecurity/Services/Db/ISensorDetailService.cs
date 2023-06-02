@@ -47,4 +47,6 @@ public interface ISensorDetailService
     /// <param name="sensorId"></param>
     /// <returns></returns>
     Task<SensorInfoModel?> GetSensorInfoByIdentifier(string sensorId);
+
+    Task<List<SensorViewModel>> GetAllSensors(string userId);
 }

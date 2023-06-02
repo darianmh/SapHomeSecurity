@@ -37,5 +37,17 @@ public enum SocketMessageType
     /// <summary>
     /// sensor active message
     /// </summary>
-    Act=9
+    Act=9,
+    /// <summary>
+    /// define admin as user 
+    /// </summary>
+    AId=10,
+    /// <summary>
+    /// send received message to admin
+    /// </summary>
+    Adm=11,
+    /// <summary>
+    /// send alive time to admin
+    /// </summary>
+    Adl=12,
 }

@@ -1,0 +1,16 @@
+﻿@model List<SapSecurity.ViewModel.UserViewModel>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+
+
+
+<div class="list-group">
+    @foreach (var item in Model)
+    {
+        <a asp-action="Sensors" asp-route-userId="@item.Id" class="list-group-item list-group-item-action">@item.Name</a>
+    }
+
+</div>

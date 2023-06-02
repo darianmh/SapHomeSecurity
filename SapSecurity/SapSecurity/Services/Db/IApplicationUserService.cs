@@ -25,4 +25,7 @@ public interface IApplicationUserService
 
     Task<LoginInfo?> GetUserByUserAndPass(string userName, string passwordHash);
     int GetLoggedInId(string token);
+
+    Task<List<UserViewModel>> GetAllUsers();
+
 }

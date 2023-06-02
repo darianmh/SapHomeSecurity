@@ -114,7 +114,11 @@ public class SensorDetailService : ISensorDetailService
         return sensorInfo;
     }
 
-
+    public async Task<List<SensorViewModel>> GetAllSensors(string userId)
+    {
+        var sensors = await _sensorDetailRepository.GetAllSensors(userId);
+        return sensors.Select(async sensorDetail => await GetSensorViewModel(sensorDetail)).Select(x => x.Result).ToList();
+    }
 
     #endregion
     #region Utilities

@@ -12,4 +12,5 @@ public interface IMapper
     ZoneViewModel Map(Zone model, SensorStatus zoneStatus);
     CameraImageViewModel Map(CameraImage model);
     SensorInfoModel MapInfo(SensorDetail sensor);
+    UserViewModel Map(ApplicationUser applicationUser);
 }

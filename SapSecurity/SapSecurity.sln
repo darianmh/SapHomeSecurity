@@ -5,7 +5,9 @@ VisualStudioVersion = 17.2.32519.379
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SapSecurity", "SapSecurity\SapSecurity.csproj", "{8895181F-9E60-436E-972E-0803B335D82E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SapSecurity.Api", "SapSecurity.Api\SapSecurity.Api.csproj", "{D0E32FA6-2AB0-47C3-ACD3-5BF63CC1B11B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SapSecurity.Api", "SapSecurity.Api\SapSecurity.Api.csproj", "{D0E32FA6-2AB0-47C3-ACD3-5BF63CC1B11B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SapSecurity.Admin", "SapSecurity.Admin\SapSecurity.Admin.csproj", "{E5266062-1631-4226-8573-5F0F32C27CC0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{D0E32FA6-2AB0-47C3-ACD3-5BF63CC1B11B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0E32FA6-2AB0-47C3-ACD3-5BF63CC1B11B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0E32FA6-2AB0-47C3-ACD3-5BF63CC1B11B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5266062-1631-4226-8573-5F0F32C27CC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5266062-1631-4226-8573-5F0F32C27CC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5266062-1631-4226-8573-5F0F32C27CC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5266062-1631-4226-8573-5F0F32C27CC0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

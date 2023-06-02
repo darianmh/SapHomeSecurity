@@ -1,0 +1,63 @@
+﻿@model System.Collections.Generic.List<SapSecurity.ViewModel.SensorViewModel>
+
+@{
+    ViewBag.Title = "Sensor";
+    Layout = "_Layout";
+}
+
+
+<div class="row">
+    <div class="col-md-12 p-3">
+        <div class="btn-group">
+            <a class="btn btn-danger">Spray</a>
+            <a class="btn bg-warning">Alarm</a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-md-12">
+        <table class="table table-bordered table-hover table-striped table-sm table-responsive">
+            <thead class="table-success">
+                <tr>
+                    <th>نام سنسور</th>
+                    <th>وضعیت</th>
+                    <th>درصد</th>
+                    <th>آخرین مقدار</th>
+                    <th>زمان آحرین پیام</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <p> <span>@item.GroupTitle</span>/<span>@item.ZoneTitle</span>/<span>@item.SensorName</span></p>
+                        </td>
+                        <td>
+                            <span>@item.Status.ToString()</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary rounded-pill">@item.SensPercent</span>
+                        </td>
+                        <td>
+                            <span>-</span>
+                        </td>
+                        <td>
+                            <span>-</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+var socket = new WebSocket("ws://109.122.199.199/websocket");
+socket.on
+    </script>
+}

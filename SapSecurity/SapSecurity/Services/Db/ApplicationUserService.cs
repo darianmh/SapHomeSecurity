@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using SapSecurity.Infrastructure.Repositories;
 using SapSecurity.Model;
 using SapSecurity.Services.Caching;
+using SapSecurity.Services.Mapper;
 using SapSecurity.Services.Tools;
 using SapSecurity.ViewModel;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
@@ -20,6 +21,7 @@ public class ApplicationUserService : IApplicationUserService
 
     private readonly IApplicationUserRepository _applicationUserRepository;
     private readonly string _secret = "JWTAuthenticationHIGHsecuredPasswordVVVp1OH7Xzyr";
+    private readonly IMapper _mapper;
 
     #endregion
     #region Methods
@@ -47,6 +49,12 @@ public class ApplicationUserService : IApplicationUserService
     {
         var principal = ValidateToken(token);
         return Convert.ToInt32(principal.FindFirst("LoggedInId")?.Value);
+    }
+
+    public async Task<List<UserViewModel>> GetAllUsers()
+    {
+        var allUsers=await _applicationUserRepository.GetAllAsync();
+        return allUsers.Select(x=>_mapper.Map(x)).ToList();
     }
 
     public string? GetUserId(string? token)
@@ -117,8 +125,9 @@ public class ApplicationUserService : IApplicationUserService
     #endregion
     #region Ctor
 
-    public ApplicationUserService(IServiceScopeFactory serviceScopeFactory)
+    public ApplicationUserService(IServiceScopeFactory serviceScopeFactory, IMapper mapper)
     {
+        _mapper = mapper;
         var scope = serviceScopeFactory.CreateScope();
         _applicationUserRepository = scope.ServiceProvider.GetService<IApplicationUserRepository>();
     }

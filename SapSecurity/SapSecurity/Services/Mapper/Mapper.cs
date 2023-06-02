@@ -79,6 +79,15 @@ public class Mapper : IMapper
         };
     }
 
+    public UserViewModel Map(ApplicationUser applicationUser)
+    {
+        return new UserViewModel()
+        {
+            Id = applicationUser.Id,
+            Name = applicationUser.Name
+        };
+    }
+
     public SensorLog Map(int status, int sensorDetailId)
     {
         return new SensorLog()

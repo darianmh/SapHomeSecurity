@@ -116,24 +116,14 @@ namespace SapSecurity.Api.Controllers
             CacheManager.ClearAllLogs(user);
             if (model.SecurityState)
             {
-                //play good by message
-                CacheManager.SetSpecialMessage("200", 100);
-                //door lock
-                CacheManager.SetSpecialMessage("202", 1);
-                CacheManager.SetDoorLock(user);
-                CacheManager.SecurityStatus = true;
                 _securityManager.RunSecurityTask(user);
             }
             else
             {
-                //play hello message
-                CacheManager.SetSpecialMessage("200", _applicationUserService.GetLoggedInId(GetToken()));
-                //dor lock
-                CacheManager.SetSpecialMessage("202", 0);
-                CacheManager.SecurityStatus = false;
-                CacheManager.SetDoorLock(user);
                 _securityManager.StopSecurityTask(user);
             }
+
+            CacheManager.ResetSpecialMessages(user);
             return Ok();
         }
 
@@ -145,81 +135,34 @@ namespace SapSecurity.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("/lockActivate")]
-        public async Task<IActionResult> LockActivate(ActivateViewModel model)
+        public Task<IActionResult> LockActivate(ActivateViewModel model)
         {
 
             if (model.SecurityState)
             {
                 //door lock
-                CacheManager.SetSpecialMessage("202", 1);
-                CacheManager.SetStatusDoorLock(true);
+                CacheManager.SetSpecialMessage("202", 1, false);
             }
             else
             {
                 //dor lock
-                CacheManager.SetSpecialMessage("202", 0);
-                CacheManager.SetStatusDoorLock(false);
+                CacheManager.SetSpecialMessage("202", 0, false);
             }
 
-            return Ok();
+            return Task.FromResult<IActionResult>(Ok());
         }
 
-
-        /// <summary>
-        /// active or de active door lock
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [HttpPost("/alarm")]
-        public async Task<IActionResult> Alarm()
-        {
-            while (true)
-            {
-                Thread.Sleep(1000);
-                CacheManager.SetSpecialMessage("100", CacheManager.Alarm ? 1 : 0);
-            }
-
-            return Ok();
-        }
-
-
-        /// <summary>
-        /// active or de active door lock
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [HttpPost("/alarm2")]
-        public async Task<IActionResult> Alarm2()
-        {
-            CacheManager.Alarm = !CacheManager.Alarm;
-
-            return Ok();
-        }
-
-
-        /// <summary>
-        /// auto spray
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [HttpPost("/spray")]
-        public async Task<IActionResult> Spray()
-        {
-
-            CacheManager.SetLastSpray("1");
-            CacheManager.SetSpecialMessage(5, 0);
-            return Ok();
-        }
 
         /// <summary>
         /// status of door lock
         /// </summary>
-        /// <param name="model"></param>
         /// <returns></returns>
         [HttpGet("/LockStatus")]
-        public async Task<IActionResult> LockStatus()
+        public Task<IActionResult> LockStatus()
         {
-            return Ok(CacheManager.GetStatusDoorLock());
+            var lastMessage = CacheManager.GetSensorLastMessage("202");
+            if (lastMessage == null || lastMessage == 0) return Task.FromResult<IActionResult>(Ok(false));
+            return Task.FromResult<IActionResult>(Ok(true));
         }
 
         /// <summary>
@@ -282,6 +225,7 @@ namespace SapSecurity.Api.Controllers
         [HttpGet("/webSocket")]
         public async Task GetMessage(CancellationToken token)
         {
+
             await _userWebSocketManager.SetupConnectionAsync(ControllerContext, token);
             // ReSharper disable once FunctionNeverReturns
         }
@@ -305,7 +249,7 @@ namespace SapSecurity.Api.Controllers
                 await _cameraImageService.SaveNew("1", Path.Combine(folderPath, name));
             }
             //play alert sound
-            CacheManager.SetSpecialMessage("200", 200);
+            CacheManager.SetSpecialMessage("200", 200, true);
             if (await _applicationUserService.GetSecurityStatus("1"))
                 _securityManager.SoundAlertAsync("1", AlertLevel.Medium);
             return Ok();
@@ -325,10 +269,10 @@ namespace SapSecurity.Api.Controllers
         }
 
         [HttpGet("/soundAlert")]
-        public async Task<IActionResult> SoundAlert(string userId, int alertLevel)
+        public Task<IActionResult> SoundAlert(string userId, int alertLevel)
         {
             _securityManager.SoundAlertAsync(userId, (AlertLevel)alertLevel);
-            return Ok();
+            return Task.FromResult<IActionResult>(Ok());
         }
 
 

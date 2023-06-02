@@ -29,7 +29,7 @@ public class MapManager : IMapManager
         try
         {
             if (alertLevel != AlertLevel.High) return;
-            var user = await _userService.GetByIdAsync(userId, true);
+            var user = await _userService.GetByIdAsync(userId);
             if (user == null) return;
             var model = new MapNotificationModel
             {

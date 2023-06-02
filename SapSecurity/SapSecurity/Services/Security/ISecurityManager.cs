@@ -1,5 +1,6 @@
 ﻿using SapSecurity.Model;
 using SapSecurity.Model.Types;
+using SapSecurity.ViewModel;
 
 namespace SapSecurity.Services.Security;
 
@@ -26,7 +27,7 @@ public interface ISecurityManager
     /// <param name="sensor"></param>
     /// <param name="sensValue"></param>
     /// <returns></returns>
-    Task SensReceiver(SensorDetail sensor, double sensValue);
+    Task<int?> SensReceiver(SensorInfoModel sensor, int sensValue);
     /// <summary>
     /// start task for measurement
     /// </summary>

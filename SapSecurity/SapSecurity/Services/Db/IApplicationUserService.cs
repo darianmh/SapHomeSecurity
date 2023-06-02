@@ -5,7 +5,7 @@ namespace SapSecurity.Services.Db;
 
 public interface IApplicationUserService
 {
-    Task<ApplicationUser?> GetByIdAsync(string id, bool forceDb = false);
+    Task<ApplicationUser?> GetByIdAsync(string id);
     Task<LoginResponseViewModel?> LoginAsync(LoginViewModel? loginModel);
     string? GetUserId(string? token);
     /// <summary>

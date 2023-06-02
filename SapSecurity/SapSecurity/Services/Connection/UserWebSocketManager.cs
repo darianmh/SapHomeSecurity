@@ -41,6 +41,7 @@ public class UserWebSocketManager : ConnectionManager, IUserWebSocketManager
                 {
                     try
                     {
+                        Console.WriteLine("web socket send");
                         await info.Handler.SendAsync(
                             new ArraySegment<byte>(Encoding.ASCII.GetBytes(messageType.GetMessageInFormat(message))), WebSocketMessageType.Text, true,
                             CancellationToken.None);
@@ -109,6 +110,7 @@ public class UserWebSocketManager : ConnectionManager, IUserWebSocketManager
             {
                 var token = _socketManager.ReadMessage(message, SocketMessageType.UId.ToString());
                 if (token == null) return;
+                Console.WriteLine("web socket connect");
                 var id = _applicationUserService.GetUserId(token);
                 if (id == null) return;
                 SetUserInfo(id, socket, socketId);

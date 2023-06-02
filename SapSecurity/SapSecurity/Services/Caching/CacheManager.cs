@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using SapSecurity.Infrastructure;
-using SapSecurity.Model;
 using SapSecurity.Model.Types;
+using SapSecurity.ViewModel;
 
 namespace SapSecurity.Services.Caching;
 
@@ -19,6 +18,7 @@ public static class CacheManager
         }
     }
 
+
     public static ConcurrentDictionary<string, List<int>> ChangedZones
     {
         get
@@ -30,18 +30,21 @@ public static class CacheManager
     private static ConcurrentDictionary<string, List<int>>? _changedZones;
 
 
-
+    private static ConcurrentDictionary<string,bool> _userLockSendStatus=new();
 
 
 
 
     public static ConcurrentDictionary<string, List<int>> ChangedSensors { get; } = new();
 
+
+    private static ConcurrentDictionary<string, bool> _userSecurityIsActive = new ConcurrentDictionary<string, bool>();
+
     public static ConcurrentDictionary<string, SensorStatus> UserSecurityStatus
     {
         get
         {
-      return _userSecurityStatus ??= new ConcurrentDictionary<string, SensorStatus>();
+            return _userSecurityStatus ??= new ConcurrentDictionary<string, SensorStatus>();
         }
     }
 
@@ -51,103 +54,42 @@ public static class CacheManager
     {
         get
         {
-      return _userSecurityStatusChanged ??= new ConcurrentDictionary<string, bool>();
+            return _userSecurityStatusChanged ??= new ConcurrentDictionary<string, bool>();
         }
     }
 
     private static ConcurrentDictionary<string, bool>? _userSecurityStatusChanged;
 
 
-    public static ConcurrentDictionary<int, double> SensorsLastValue
-    {
-        get
-        {
-      return _sensorsLastValue ??= new ConcurrentDictionary<int, double>();
-        }
-    }
-
-    private static ConcurrentDictionary<int, double>? _sensorsLastValue;
 
 
-    private static BlockingCollection<ApplicationUser>? _users;
-    public static BlockingCollection<ApplicationUser> Users
-    {
-        get
-        {
-       return _users ??= new BlockingCollection<ApplicationUser>();
-        }
-        set
-        {
-            _users = value;
-        }
-    }
+    private static BlockingCollection<SensorInfoModel>? _sensorInfos;
+    public static BlockingCollection<SensorInfoModel> SensorInfos => _sensorInfos ??= new BlockingCollection<SensorInfoModel>();
 
 
-    private static List<SensorDetail>? _sensorDetails;
-    public static List<SensorDetail> SensorDetails
-    {
-        get
-        {
-         return _sensorDetails ??= new List<SensorDetail>();
-        }
-    }
-
-
-
-
-    private static readonly ConcurrentDictionary<int, int> SensorSpecialMessages = new();
-    private static readonly Dictionary<string, DateTime> LastSpray = new();
-    private static readonly Dictionary<string, DateTime> LastDoorMessage = new();
+    private static readonly ConcurrentDictionary<int, SpecialMessageModel> SensorSpecialMessages = new();
 
     #endregion
     #region Methods
 
-    public static void SetDoorLock(string userId)
+    public static void SetUserLockSendStatus(string userId, bool isLock)
     {
-        if (LastDoorMessage.ContainsKey(userId))
+        if (_userLockSendStatus.ContainsKey(userId))
         {
-            LastDoorMessage[userId] = DateTime.Now;
+            _userLockSendStatus[userId]= isLock;
         }
         else
         {
-            LastDoorMessage.Add(userId, DateTime.Now);
+            _userLockSendStatus.TryAdd(userId, isLock);
         }
     }
-    public static DateTime? GetLastDoorLock(string userId)
+    public static bool GetUserLockSendStatus(string userId)
     {
-        LastDoorMessage.TryGetValue(userId, out var dateTime);
-        return dateTime;
-    }
-    public static void SetLastSpray(string userId)
-    {
-        if (LastSpray.ContainsKey(userId))
-        {
-            LastSpray[userId] = DateTime.Now;
-        }
-        else
-        {
-            LastSpray.Add(userId, DateTime.Now);
-        }
-    }
-    public static DateTime? GetLastSpray(string userId)
-    {
-        LastSpray.TryGetValue(userId, out var dateTime);
-        return dateTime;
+        if(_userLockSendStatus.TryGetValue(userId,out var isLock))
+            return isLock;
+        return false;
     }
 
-    public static void SetSensorsLastValue(int sensorId, int zoneId, string userId, double sensValue)
-    {
-        if (SensorsLastValue.ContainsKey(sensorId))
-        {
-            SensorsLastValue[sensorId] = sensValue;
-        }
-        else
-        {
-            SetChangedZone(userId, zoneId);
-            SetChangedSensor(userId, sensorId);
-            SensorsLastValue.TryAdd(sensorId, sensValue);
-        }
-    }
 
     public static void SetChangedSensor(string userId, int sensorId)
     {
@@ -171,93 +113,99 @@ public static class CacheManager
             ChangedZones.TryAdd(userId, new List<int>() { zoneId });
         }
     }
-    public static double? GetSensorsLastValue(int sensorId)
-    {
-        if (SensorsLastValue.TryGetValue(sensorId, out var lastValue)) return lastValue;
-        return null;
-    }
-    public static void AddSensorDetail(SensorDetail sensorDetail)
-    {
-        if (SensorDetails.All(x => x.Id != sensorDetail.Id))
-            SensorDetails.Add(sensorDetail);
-    }
 
-    public static bool SecurityStatus = false;
-    public static void RemoveUser(ApplicationUser user)
+
+
+
+    public static void ResetSpecialMessages(string userId)
     {
-        var toRemove = Users.FirstOrDefault(x => x.Id == user.Id);
-        if (toRemove != null) Users = new BlockingCollection<ApplicationUser>();
+        var sensors = SensorInfos.Where(x => x.UserId == userId).ToList();
+        if (sensors != null) sensors.ForEach(x => DeleteSpecialMessage(x.SensorId));
     }
 
-    public static bool Alarm = false;
-    /// <summary>
-    /// status of user security
-    /// </summary>
-    /// <param name="sensor"></param>
-    /// <returns></returns>
-    public static int GetUserSecurityStatus(SensorDetail sensor)
+    public static void DeleteSpecialMessage(int sensorId)
     {
-
-        var specialMessage = ReadSpecialMessage(sensor.Id);
-        if (specialMessage != null) return specialMessage.Value;
-        //door lock
-        if (sensor.Identifier == "202") return 2;
-
-
-        //spray
-        if (sensor.Id == 5) return 1;
-
-
-
-        var homeIndex = IndexManager.GetUserIndexValue(sensor.UserId);
-        if (!SecurityStatus) return 0;
-
-        var checkUser = true;
-        if (sensor.SensorGroup.IsCritical)
-        {
-            var indexValue = IndexManager.GetSensorIndex(sensor.Id);
-
-            if (indexValue != 0) checkUser = false;
-            else homeIndex = indexValue;
-        }
-        if (checkUser)
-        {
-            homeIndex = sensor.SensorGroup.IsZoneRestricted
-                ? IndexManager.GetZoneIndexValue(sensor.ZoneId)
-                : IndexManager.GetUserIndexValue(sensor.UserId);
-        }
-
-        if (sensor.Id == 3)
-        {
-            return homeIndex >= SecurityConfig.IndexDangerValue ? 0 : 1;
-        }
-
-        Console.WriteLine(SecurityConfig.IndexDangerValue);
-        return homeIndex >= SecurityConfig.IndexDangerValue ? 1 : 0;
+        SensorSpecialMessages.TryRemove(sensorId, out _);
     }
-
-    private static int? ReadSpecialMessage(int sensorId)
+    public static int? ReadSpecialMessage(int sensorId)
     {
         if (SensorSpecialMessages.TryGetValue(sensorId, out var value))
         {
-            SensorSpecialMessages.TryRemove(sensorId, out var item);
-            return value;
+            if (value.IsOneTime) DeleteSpecialMessage(sensorId);
+            return value.Message;
         }
         return null;
     }
 
-    public static void SetSpecialMessage(string sensorIdentifier, int message)
+    public static void SetSpecialMessage(string sensorIdentifier, int message, bool isOneTime)
     {
-        var sensorId = SensorDetails.FirstOrDefault(x => x.Identifier == sensorIdentifier)?.Id;
+        var sensorId = SensorInfos.FirstOrDefault(x => x.SensorIdentifier == sensorIdentifier)?.SensorId;
         if (sensorId == null) return;
-        SetSpecialMessage(sensorId.Value, message);
+        SetSpecialMessage(sensorId.Value, message, isOneTime);
     }
-    public static void SetSpecialMessage(int sensorId, int message)
+    public static void SetSpecialMessage(int sensorId, int message, bool isOneTime)
     {
         if (SensorSpecialMessages.ContainsKey(sensorId))
-            SensorSpecialMessages[sensorId] = message;
-        else SensorSpecialMessages.TryAdd(sensorId, message);
+            SensorSpecialMessages[sensorId] = new SpecialMessageModel()
+            {
+                IsOneTime = isOneTime,
+                Message = message
+            };
+        else SensorSpecialMessages.TryAdd(sensorId, new SpecialMessageModel()
+        {
+            IsOneTime = isOneTime,
+            Message = message
+        });
     }
+
+
+    private static readonly ConcurrentDictionary<int, int> SensorsLastMessage = new();
+
+    public static int? GetSensorLastMessage(string sensorIdentifier)
+    {
+        var sensorId = SensorInfos.FirstOrDefault(x => x.SensorIdentifier == sensorIdentifier)?.SensorId;
+        if (sensorId == null) return null;
+        return GetSensorLastMessage((int)sensorId);
+    }
+    public static int? GetSensorLastMessage(int sensorId)
+    {
+        if (SensorsLastMessage.TryGetValue(sensorId, out var message))
+        {
+            return message;
+        }
+
+        return null;
+    }
+    public static void SetSensorLastMessage(int sensorId, int message)
+    {
+        if (SensorsLastMessage.ContainsKey(sensorId))
+        {
+            SensorsLastMessage[sensorId] = message;
+        }
+        else
+        {
+            SensorsLastMessage.TryAdd(sensorId, message);
+        }
+    }
+
+
+    public static bool GetUserSecurityActivate(string userId)
+    {
+        _userSecurityIsActive.TryGetValue(userId, out var isActive);
+        return isActive;
+    }
+    public static void SetUserSecurityActivate(string userId, bool isActive)
+    {
+        if (_userSecurityIsActive.ContainsKey(userId))
+        {
+            _userSecurityIsActive[userId] = isActive;
+        }
+        else
+        {
+            _userSecurityIsActive.TryAdd(userId, isActive);
+        }
+    }
+
 
     public static AlertLevel GetAlertLevel(string userId)
     {
@@ -306,35 +254,26 @@ public static class CacheManager
         }
     }
 
-    public static List<SensorDetail> GetChangedSensors(string userId)
+    public static List<SensorInfoModel> GetChangedSensors(string userId)
     {
         if (ChangedSensors.TryGetValue(userId, out var changes))
         {
-            ChangedSensors.Remove(userId, out var item);
-            return SensorDetails.Where(z => changes.Any(c => c == z.Id)).ToList();
+            ChangedSensors.Remove(userId, out _);
+            return SensorInfos.Where(z => changes.Any(c => c == z.SensorId)).ToList();
         }
 
-        return new List<SensorDetail>();
+        return new List<SensorInfoModel>();
     }
-    public static List<Zone> GetChangedZones(string userId)
+    public static List<SensorInfoModel> GetChangedZones(string userId)
     {
         if (ChangedZones.TryGetValue(userId, out var changes))
         {
-            ChangedZones.Remove(userId, out var item);
-            return SensorDetails.Where(z => changes.Any(c => c == z.ZoneId)).Select(x => x.Zone).ToList();
+            ChangedZones.Remove(userId, out _);
+            return SensorInfos.Where(z => changes.Any(c => c == z.ZoneId)).ToList();
         }
-        return new List<Zone>();
+        return new List<SensorInfoModel>();
     }
 
-    public static bool GetStatusDoorLock()
-    {
-        return _statusDoorLock;
-    }
-    private static bool _statusDoorLock = false;
-    public static void SetStatusDoorLock(bool statusDoorLock)
-    {
-        _statusDoorLock = statusDoorLock;
-    }
 
     /// <summary>
     /// clear logs after user security status changed
@@ -343,6 +282,10 @@ public static class CacheManager
     public static void ClearAllLogs(string userId)
     {
         IndexManager.ResetUserHomeSecurityIndex(userId);
+    }
+    public static int? GetSensorsLastValue(int sensorDetailId)
+    {
+        return IndexManager.GetSensorValue(sensorDetailId);
     }
 
     #endregion

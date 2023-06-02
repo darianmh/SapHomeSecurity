@@ -21,29 +21,7 @@ public class ConnectionHub : IConnectionHub
 
     public void Setup()
     {
-        if (!_context.LoginInfos.Any(x => x.UserName == "mh"))
-        {
-            _context.LoginInfos.Add(new LoginInfo()
-            {
-                UserId = "1",
-                PasswordHash = PasswordHasher.Hash("Aa1234"),
-                PhoneNumber = "09120853439",
-                UserName = "mh"
-            });
-            _context.SaveChanges();
-        }
-        foreach (var detail in _context.SensorDetails.ToList())
-        {
-            try
-            {
-                HomeSocketHandle.SensorInfos.Add(detail.Identifier, detail.Id);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
+   
     }
 
 

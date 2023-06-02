@@ -1,6 +1,4 @@
 ﻿using SapSecurity.Infrastructure;
-using SapSecurity.Infrastructure.Extensions;
-using SapSecurity.Model;
 using SapSecurity.Model.Types;
 using SapSecurity.ViewModel;
 
@@ -8,89 +6,57 @@ namespace SapSecurity.Services.Caching
 {
     public static class IndexManager
     {
-        public static readonly List<IndexModel> Index = new();
+        public static readonly List<SensorIndexModel> Index = new();
         private static readonly Dictionary<int, DateTime> LastActiveTime = new();
 
-        public static void SetIndex(SensorDetail sensor, int indexValue)
+        public static void SetIndex(SensorInfoModel sensor, int indexValue, int? sensValue)
         {
-            var now = DateTime.Now;
-            if (Index.Any(x => x.SensorId == sensor.Id))
+            if (Index.Any(x => x.SensorId == sensor.SensorId))
             {
-                foreach (var model in Index.Where(x => x.SensorId == sensor.Id))
+                foreach (var model in Index.Where(x => x.SensorId == sensor.SensorId))
                 {
-                    if (Math.Abs(indexValue - sensor.SensorGroup.NeutralValue!.Value) < 0.01)
+                    if (indexValue == sensor.NeutralValue)
                     {
                         var userStatus = CacheManager.GetAlertLevel(sensor.UserId);
                         if (userStatus == AlertLevel.High) return;
                     }
 
-                    var statusChanged = false;
-                    //if (indexValue == 0 && model.CreateDate.AddSeconds(SecurityConfig.LastLogSeconds) >= DateTime.Now) continue;
-                    if (Math.Abs(indexValue - sensor.SensorGroup.NeutralValue!.Value) > 0.01)
+                    if (model.SensorValue != sensValue)
                     {
-                        model.IndexValue = indexValue;
-                        CacheManager.SetChangedSensor(sensor.UserId, sensor.Id);
+                        CacheManager.SetChangedSensor(sensor.UserId, sensor.SensorId);
                         CacheManager.SetChangedZone(sensor.UserId, sensor.ZoneId);
-                        statusChanged = true;
                     }
-                    //todo wight sensor
-                    //weight sensor , value not changed , sensor is not in neutral value
-                    //do not change time
-                    if (sensor.Id == 25 && !statusChanged && Math.Abs(indexValue - sensor.SensorGroup.NeutralValue!.Value) < 0.01)
-                    {
-                        if (model.CreateDate.AddSeconds(8) > now)
-                        {
-                            return;
-                        }
-                    }
+                    model.SensorValue = sensValue;
+                    model.IndexValue = indexValue;
                     model.CreateDate = DateTime.Now;
                 }
             }
             else
             {
-                Index.Add(new IndexModel(sensor.Id, sensor.ZoneId, sensor.SensorGroupId, sensor.UserId, indexValue, DateTime.Now));
-                CacheManager.SetChangedSensor(sensor.UserId, sensor.Id);
+                Index.Add(new SensorIndexModel(sensor.SensorId, sensor.ZoneId, sensor.GroupId, sensor.UserId, indexValue, DateTime.Now, sensValue));
+                CacheManager.SetChangedSensor(sensor.UserId, sensor.SensorId);
                 CacheManager.SetChangedZone(sensor.UserId, sensor.ZoneId);
             }
-            // Console.WriteLine($"Sensor Value = {indexValue} All = {string.Join(" , ", Index.Select(x => $"{x.SensorId}: {x.IndexValue}"))}");
         }
 
         public static int GetSensorIndex(int sensorId)
         {
-            //var deleteDate = DateTime.Now.AddSeconds(SecurityConfig.LastLogSeconds * -1);
-            return Index.FirstOrDefault(x => x.SensorId == sensorId /*&& x.CreateDate >= deleteDate*/)?.IndexValue ?? 0;
+            return Index.FirstOrDefault(x => x.SensorId == sensorId)?.IndexValue ?? 0;
+        }
+        public static int? GetSensorValue(int sensorId)
+        {
+            return Index.FirstOrDefault(x => x.SensorId == sensorId)?.SensorValue;
         }
 
         public static int GetUserIndexValue(string userId)
         {
-            //var deleteDate = DateTime.Now.AddSeconds(SecurityConfig.LastLogSeconds * -1);
-            var userIndexes = Index.Where(x => x.UserId == userId /*&& x.CreateDate >= deleteDate*/).ToList();
-            var dateNow = DateTime.Now;
-
+            var userIndexes = Index.Where(x => x.UserId == userId).ToList();
 
             var sum = 0;
             foreach (var user in userIndexes)
             {
-                //weight sensor
-                //if > 5 seconds full index value
-                //else half index value
-                if (user.SensorId == 25)
-                {
-                    if (user.CreateDate.AddSeconds(8) <= dateNow)
-                    {
-                        sum += user.IndexValue;
-                        Console.WriteLine($"weight {user.IndexValue}");
-                    }
-                    else
-                    {
-                        sum += user.IndexValue / 2;
-                        Console.WriteLine($"weight {user.IndexValue / 2}");
-                    }
-                }
-                else
-                {
-                    sum += user.IndexValue;
-                }
+
+                sum += user.IndexValue;
             }
 
             return sum;

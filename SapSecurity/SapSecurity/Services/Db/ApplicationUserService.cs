@@ -24,17 +24,9 @@ public class ApplicationUserService : IApplicationUserService
     #endregion
     #region Methods
 
-    public async Task<ApplicationUser?> GetByIdAsync(string id, bool forceDb = false)
+    public async Task<ApplicationUser?> GetByIdAsync(string id)
     {
-
-        if (forceDb) return await _applicationUserRepository.GetByIdAsync(id);
-        var user = CacheManager.Users.FirstOrDefault(x => x.Id == id);
-        if (user == null)
-        {
-            user = await _applicationUserRepository.GetByIdAsync(id);
-            if (user != null) CacheManager.Users.Add(user);
-        }
-        return user;
+        return await _applicationUserRepository.GetByIdAsync(id);
     }
 
     public async Task<LoginResponseViewModel?> LoginAsync(LoginViewModel? loginModel)
@@ -86,7 +78,7 @@ public class ApplicationUserService : IApplicationUserService
         userModel.SecurityIsActive = securityState;
         _applicationUserRepository.Update(userModel);
         await _applicationUserRepository.SaveChangeAsync();
-        CacheManager.RemoveUser(userModel);
+        CacheManager.SetUserSecurityActivate(user, securityState);
         return true;
     }
 

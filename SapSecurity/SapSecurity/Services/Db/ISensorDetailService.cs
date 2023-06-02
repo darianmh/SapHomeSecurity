@@ -6,7 +6,6 @@ namespace SapSecurity.Services.Db;
 
 public interface ISensorDetailService
 {
-    Task<string?> GetUserBySensor(int sensorId);
     /// <summary>
     /// find by unique key
     /// </summary>
@@ -30,16 +29,22 @@ public interface ISensorDetailService
 
     Task<List<SensorViewModel>> GetAllSensors(int zoneId);
     Task<SensorViewModel?> GetSensorViewModel(SensorDetail sensorDetail);
-    Task<SensorViewModel?> GetByIdViewModelAsync(int id);
 
 
     Task<int> GetSensPercent(SensorDetail sensor);
-    int GetSensPercent(SensorDetail sensor, double? lastValue);
+    int GetSensPercent(int? lastValue, bool isDigital, double neutralValue);
 
     /// <summary>
     /// find sensors with no log in last seconds
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<List<SensorDetail>> GetDeActiveSensors(string userId);
+    Task<List<SensorInfoModel>> GetDeActiveSensors(string userId);
+
+    /// <summary>
+    /// find sensor by identifier and cache
+    /// </summary>
+    /// <param name="sensorId"></param>
+    /// <returns></returns>
+    Task<SensorInfoModel?> GetSensorInfoByIdentifier(string sensorId);
 }

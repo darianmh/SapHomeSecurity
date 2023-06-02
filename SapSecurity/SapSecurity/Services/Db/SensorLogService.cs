@@ -22,7 +22,7 @@ public class SensorLogService : ISensorLogService
     #endregion
     #region Methods
 
-    public async Task LogAsync(double status, int sensorDetailId)
+    public async Task LogAsync(int status, int sensorDetailId)
     {
         var log = _mapper.Map(status, sensorDetailId);
         await _sensorLogRepository.InsertAsync(log);

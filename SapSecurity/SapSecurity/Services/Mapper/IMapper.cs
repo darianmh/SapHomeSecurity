@@ -7,8 +7,9 @@ namespace SapSecurity.Services.Mapper;
 public interface IMapper
 {
     SensorGroupViewModel Map(SensorGroup model, SensorStatus groupStatus);
-    SensorLog Map(double status, int sensorDetailId);
-    SensorViewModel? Map(SensorDetail model, SensorStatus sensorStatus, double? sensValue, int sensPercent);
+    SensorLog Map(int status, int sensorDetailId);
+    SensorViewModel? Map(SensorDetail model, SensorStatus sensorStatus, int? sensValue, int sensPercent);
     ZoneViewModel Map(Zone model, SensorStatus zoneStatus);
     CameraImageViewModel Map(CameraImage model);
+    SensorInfoModel MapInfo(SensorDetail sensor);
 }

@@ -19,7 +19,7 @@ public class Mapper : IMapper
         };
     }
 
-    public SensorViewModel? Map(SensorDetail model, SensorStatus sensorStatus, double? sensValue, int sensPercent)
+    public SensorViewModel? Map(SensorDetail model, SensorStatus sensorStatus, int? sensValue, int sensPercent)
     {
         return new SensorViewModel()
         {
@@ -59,7 +59,24 @@ public class Mapper : IMapper
         };
     }
 
-    public SensorLog Map(double status, int sensorDetailId)
+    public SensorInfoModel MapInfo(SensorDetail sensor)
+    {
+        return new SensorInfoModel()
+        {
+            SensorIdentifier = sensor.Identifier,
+            GroupId = sensor.SensorGroupId,
+            NeutralValue = sensor.SensorGroup.NeutralValue ?? 0,
+            SensorId = sensor.Id,
+            UserId = sensor.UserId,
+            Weight = sensor.Weight ?? sensor.SensorGroup.Weight,
+            ZoneId = sensor.ZoneId,
+            IsDigital = sensor.SensorGroup.IsDigital,
+            WeightPercent = sensor.SensorGroup.WeightPercent ?? 100,
+            GroupType = sensor.SensorGroup.SensorGroupType,
+        };
+    }
+
+    public SensorLog Map(int status, int sensorDetailId)
     {
         return new SensorLog()
         {

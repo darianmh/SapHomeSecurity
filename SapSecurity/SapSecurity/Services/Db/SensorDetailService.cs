@@ -19,24 +19,13 @@ public class SensorDetailService : ISensorDetailService
     #region Methods
 
 
-    public async Task<string?> GetUserBySensor(int sensorId)
-    {
-        var detail = await _sensorDetailRepository.GetByIdAsync(sensorId);
-        return detail?.UserId;
-    }
 
     public async Task<SensorDetail?> GetByIdentifierAsync(string identifier)
         => await _sensorDetailRepository.GetByIdentifier(identifier);
 
     public async Task<SensorDetail?> GetByIdAsync(int id)
     {
-        var sensorDetail = CacheManager.SensorDetails.FirstOrDefault(x => x.Id == id);
-        if (sensorDetail == null)
-        {
-            sensorDetail = await _sensorDetailRepository.GetByIdAsync(id);
-            if (sensorDetail != null) CacheManager.AddSensorDetail(sensorDetail);
-        }
-        return sensorDetail;
+        return await _sensorDetailRepository.GetByIdAsync(id);
     }
 
     public async Task<bool> SetSensorState(int sensorId, int sensorState)
@@ -73,14 +62,13 @@ public class SensorDetailService : ISensorDetailService
     {
         if (!sensor.IsActive) return 0;
         var lastLog = await _sensorLogService.GetLastLogAsync(sensor.Id);
-        return GetSensPercent(sensor, lastLog?.Status);
+        return GetSensPercent(lastLog?.Status, sensor.SensorGroup.IsDigital, sensor.SensorGroup.NeutralValue ?? 0);
     }
 
-    public int GetSensPercent(SensorDetail sensor, double? lastValue)
+    public int GetSensPercent(int? lastValue, bool isDigital, double neutralValue)
     {
         if (lastValue == null) return 100;
-        var neutralValue = sensor.SensorGroup.NeutralValue ?? 1;
-        if (!sensor.SensorGroup.IsDigital)
+        if (!isDigital)
         {
             var percent = (neutralValue - lastValue) / neutralValue * 100;
             return Convert.ToInt32(percent);
@@ -92,7 +80,7 @@ public class SensorDetailService : ISensorDetailService
         }
     }
 
-    public async Task<List<SensorDetail>> GetDeActiveSensors(string userId)
+    public async Task<List<SensorInfoModel>> GetDeActiveSensors(string userId)
     {
         var allUserSensors = await _sensorDetailRepository.GetAllSensors(userId);
         var deActive = new List<SensorDetail>();
@@ -111,18 +99,32 @@ public class SensorDetailService : ISensorDetailService
                 continue;
             }
         }
-        return deActive;
+        return deActive.Select(x => _mapper.MapInfo(x)).ToList();
     }
 
-    public async Task<SensorViewModel?> GetByIdViewModelAsync(int id)
+    public async Task<SensorInfoModel?> GetSensorInfoByIdentifier(string sensorId)
     {
-        var sensor = await GetByIdAsync(id);
-        return sensor != null ? await GetSensorViewModel(sensor) : null;
+        var sensorInfo = CacheManager.SensorInfos.FirstOrDefault(x => x.SensorIdentifier == sensorId);
+        if (sensorInfo == null)
+        {
+            sensorInfo = await GetInfoByDb(sensorId);
+            if (sensorInfo != null) CacheManager.SensorInfos.Add(sensorInfo);
+        }
+
+        return sensorInfo;
     }
+
+
 
     #endregion
     #region Utilities
 
+    private async Task<SensorInfoModel?> GetInfoByDb(string sensorId)
+    {
+        var sensor = await GetByIdentifierAsync(sensorId);
+        if (sensor != null) return _mapper.MapInfo(sensor);
+        return null;
+    }
 
 
     #endregion

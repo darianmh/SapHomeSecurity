@@ -26,17 +26,20 @@ namespace SapSecurity.Model
         /// <summary>
         /// value when sensor is working Properly
         /// </summary>
-        public double? NeutralValue { get; set; }
+        public int? NeutralValue { get; set; }
         /// <summary>
-        /// define sensor is critical
+        /// type of group
         /// </summary>
-        public bool IsCritical { get; set; }
-        /// <summary>
-        /// define sensor is restricted in zone
-        /// </summary>
-        public bool IsZoneRestricted { get; set; }
+        public SensorGroupType SensorGroupType { get; set; }
 
         public int Weight { get; set; }
+        /// <summary>
+        /// weight affect per second
+        /// if 100 means each un neutral value fills weight
+        /// if 50 mean each un neutral value fill 500 percent of weight
+        /// </summary>
+        public int? WeightPercent { get; set; }
+
         //np
         public IList<SensorDetail> SensorDetails { get; set; }
     }

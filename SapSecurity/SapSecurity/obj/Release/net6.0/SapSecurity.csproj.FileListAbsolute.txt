@@ -1,0 +1,14 @@
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\bin\Release\net6.0\SapSecurity.deps.json
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\bin\Release\net6.0\SapSecurity.runtimeconfig.json
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\bin\Release\net6.0\SapSecurity.dll
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\bin\Release\net6.0\SapSecurity.pdb
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\SapSecurity.csproj.AssemblyReference.cache
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\SapSecurity.GeneratedMSBuildEditorConfig.editorconfig
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\SapSecurity.AssemblyInfoInputs.cache
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\SapSecurity.AssemblyInfo.cs
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\SapSecurity.csproj.CoreCompileInputs.cache
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\SapSecurity.dll
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\refint\SapSecurity.dll
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\SapSecurity.pdb
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\SapSecurity.genruntimeconfig.cache
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity\obj\Release\net6.0\ref\SapSecurity.dll

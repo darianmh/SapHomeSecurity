@@ -9,7 +9,7 @@ public class SensorLog : BaseEntity
     /// active deActive of digital sensors
     /// value of analog sensors
     /// </summary>
-    public double Status { get; set; }
+    public int Status { get; set; }
     public int SensorDetailId { get; set; }
 
     //np

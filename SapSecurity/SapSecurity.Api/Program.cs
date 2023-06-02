@@ -1,3 +1,5 @@
+using SapSecurity.Infrastructure.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,19 +9,45 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+var connectionString =
+    "Data Source=109.122.199.199;Initial Catalog=SapSecurity_Db;User Id=Sa;password=rasoul3744;Trusted_Connection=false;MultipleActiveResultSets=true;Encrypt=False;";
+
+builder.Services.SetupServices(connectionString);
+
+
+builder.Services.AddCors(option =>
+{
+    option.AddPolicy("MyPolicy", policy =>
+    {
+        policy.AllowAnyOrigin();
+        policy.AllowAnyMethod();
+        policy.AllowAnyHeader();
+        policy.SetIsOriginAllowed(_ => true);
+    });
+});
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
-app.UseHttpsRedirection();
+
+
+//var connectionHub = app.Services.GetRequiredService<IConnectionHub>();
+//connectionHub.Setup();
+//connectionHub.RunRegisterUserSocketAsync();
+//connectionHub.RunRegisterSensorLogSocketUdpAsync();
+
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseWebSockets();
+
+app.UseCors("MyPolicy");
 
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();

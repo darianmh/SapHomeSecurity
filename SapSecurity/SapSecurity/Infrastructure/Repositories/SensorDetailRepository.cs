@@ -21,7 +21,10 @@ public class SensorDetailRepository : BaseRepository<SensorDetail>, ISensorDetai
     }
 
     public async Task<SensorDetail?> GetByIdentifier(string identifier)
-        => await DbSet.FirstOrDefaultAsync(x => x.Identifier == identifier);
+        => await DbSet
+            .Include(x => x.SensorGroup)
+            .Include(x => x.Zone)
+            .FirstOrDefaultAsync(x => x.Identifier == identifier);
 
     public async Task<List<SensorDetail>> GetAllSensors(int zoneId)
     {

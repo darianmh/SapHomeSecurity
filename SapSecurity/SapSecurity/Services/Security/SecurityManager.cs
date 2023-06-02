@@ -1,10 +1,9 @@
-﻿
-using SapSecurity.Infrastructure.Extensions;
-using SapSecurity.Model;
+﻿using SapSecurity.Model;
 using SapSecurity.Model.Types;
 using SapSecurity.Services.Caching;
 using SapSecurity.Services.Connection;
 using SapSecurity.Services.Db;
+using SapSecurity.ViewModel;
 
 namespace SapSecurity.Services.Security;
 
@@ -17,7 +16,6 @@ public class SecurityManager : ISecurityManager
     private readonly IUserSocketManager _userSocketManager;
     private readonly IUserSmsManager _userSmsManager;
     private readonly IUserWebSocketManager _userWebSocketManager;
-    private readonly IApplicationUserService _applicationUserService;
     private readonly IHomeUdpSocketManager _homeUdpSocketManager;
     private readonly IMapManager _mapManager;
 
@@ -26,12 +24,8 @@ public class SecurityManager : ISecurityManager
 
     public async Task MeasureDangerPossibility(string userId)
     {
-        var user = await _applicationUserService.GetByIdAsync(userId);
-        if (user == null)
-        {
-            return;
-        }
-        if (user.SecurityIsActive != true)
+        var securityStatus = CacheManager.GetUserSecurityActivate(userId);
+        if (securityStatus != true)
         {
             CacheManager.SetSecurityStatus(userId, SensorStatus.DeActive);
         }
@@ -53,74 +47,37 @@ public class SecurityManager : ISecurityManager
     }
 
 
-    public async Task SensReceiver(SensorDetail sensor, double sensValue)
+    public async Task<int?> SensReceiver(SensorInfoModel sensor, int sensValue)
     {
-        CacheManager.SetSensorsLastValue(sensor.Id, sensor.ZoneId, sensor.UserId, sensValue);
-        if (!Equals(sensValue, sensor.SensorGroup.NeutralValue))
+        if (sensValue != sensor.NeutralValue)
         {
-            var weight = sensor.Weight ?? sensor.SensorGroup.Weight;
+            var weight = sensor.Weight;
             var index = weight;
-            if (!sensor.SensorGroup.IsDigital)
+            if (!sensor.IsDigital)
             {
-                if (sensor.SensorGroup.NeutralValue != 0)
-                    index = Convert.ToInt32((sensor.SensorGroup.NeutralValue - sensValue) / sensor.SensorGroup.NeutralValue * 100);
+                if (sensor.NeutralValue != 0)
+                    index = Convert.ToInt32((sensor.NeutralValue - sensValue) / sensor.NeutralValue * 100);
             }
-            else
+            else if (sensor.WeightPercent != 100)
             {
-                //spray
-                if (sensor.Id == 4 && (await _applicationUserService.GetSecurityStatus(sensor.UserId)))
-                {
-                    var lastSpray = CacheManager.GetLastSpray(sensor.UserId);
-                    if (lastSpray == null || lastSpray.Value.AddSeconds(30) < DateTime.Now)
-                    {
-                        CacheManager.SetLastSpray(sensor.UserId);
-                        CacheManager.SetSpecialMessage(5, 0);
-                    }
-                    //else if (lastSpray.Value.AddSeconds(2) >= DateTime.Now)
-                    //{
-                    //    CacheManager.SetLastSpray(sensor.UserId);
-                    //    CacheManager.SetSpecialMessage(5, 1);
-                    //}
-                }
-
-                if (sensor.Identifier == "202")
-                {
-                    var lastDoorLock = CacheManager.GetLastDoorLock(sensor.UserId);
-                    if (lastDoorLock != null)
-                    {
-                        if (await _applicationUserService.GetSecurityStatus(sensor.UserId))
-                        {
-                            if (lastDoorLock.Value.AddSeconds(3) < DateTime.Now)
-                            {
-                                CacheManager.SetSpecialMessage("202", 1);
-                            }
-                            else
-                            {
-                                CacheManager.SetSpecialMessage("202", 2);
-                            }
-                        }
-                        else
-                        {
-                            if (lastDoorLock.Value.AddSeconds(3) < DateTime.Now)
-                            {
-                                CacheManager.SetSpecialMessage("202", 0);
-                            }
-                            else
-                            {
-                                CacheManager.SetSpecialMessage("202", 2);
-                            }
-                        }
-                    }
-                }
+                //for something like weight sensors
+                var sensorLastIndex = IndexManager.GetSensorIndex(sensor.SensorId);
+                index = weight * sensor.WeightPercent / 100;
+                index += sensorLastIndex;
             }
-            IndexManager.SetIndex(sensor, index);
+            IndexManager.SetIndex(sensor, index, sensValue);
         }
         else
         {
-            IndexManager.SetIndex(sensor, 0);
+            IndexManager.SetIndex(sensor, 0, sensValue);
         }
         await MeasureDangerPossibility(sensor.UserId);
+
+        return GetSensorResponse(sensor);
+
     }
+
+
 
     public void RunSecurityTask(string user)
     {
@@ -132,22 +89,19 @@ public class SecurityManager : ISecurityManager
         var thread = new Thread(async () =>
         {
             var c = 0;
-            Console.WriteLine("add task");
             while (CacheManager.UserSecurityCheck.TryGetValue(user, out var check) && check)
             {
                 if (c < 6)
                 {
-                    Console.WriteLine("check wait");
                     await Task.Delay(10000);
                     c++;
                     continue;
                 }
 
                 c = 0;
-                Console.WriteLine("check wait done");
                 //find de active sensors
                 var deActiveSensors = await _sensorDetailService.GetDeActiveSensors(userId: user);
-                deActiveSensors.ForEach(x => IndexManager.SetIndex(x, x.Weight ?? x.SensorGroup.Weight));
+                deActiveSensors.ForEach(x => IndexManager.SetIndex(x, x.Weight, null));
                 Console.WriteLine(string.Join(",", IndexManager.Index.Select(x => $"{x.SensorId}: {x.IndexValue}")));
                 await MeasureDangerPossibility(user);
             }
@@ -166,10 +120,68 @@ public class SecurityManager : ISecurityManager
 
     #endregion
     #region Utilities
+    private int? GetSensorResponse(SensorInfoModel sensor)
+    {
+        var specialMessage = CacheManager.ReadSpecialMessage(sensor.SensorId);
+        if (specialMessage != null) return specialMessage;
+
+
+        //sensors
+        if (sensor.GroupType == SensorGroupType.Sensor)
+            return null;
+
+        //like spray
+        if (sensor.GroupType == SensorGroupType.ZoneReceiver)
+        {
+            if (!CacheManager.GetUserSecurityActivate(sensor.UserId)) return 0;
+            var zoneStatus = IndexManager.GetZoneStatus(sensor.ZoneId, sensor.UserId);
+            if (zoneStatus == SensorStatus.Danger || zoneStatus == SensorStatus.Warning) return 1;
+            if (zoneStatus == SensorStatus.Active || zoneStatus == SensorStatus.DeActive) return 0;
+            return null;
+        }
+
+        //like other alarms
+        if (sensor.GroupType == SensorGroupType.HomeReceiver)
+        {
+
+            if (!CacheManager.GetUserSecurityActivate(sensor.UserId)) return 0;
+            var homeStatus = IndexManager.GetUserHomeStatus(sensor.UserId);
+            if (homeStatus == SensorStatus.Danger || homeStatus == SensorStatus.Warning) return 1;
+            if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive) return 0;
+            return null;
+        }
+        //like critical alarm
+        if (sensor.GroupType == SensorGroupType.CriticalHomeReceiver)
+        {
+            if (!CacheManager.GetUserSecurityActivate(sensor.UserId))
+            {
+                var sensorStatus = IndexManager.GetSensorStatus(sensor.SensorId, sensor.ZoneId, sensor.UserId);
+                if (sensorStatus == SensorStatus.Danger || sensorStatus == SensorStatus.Warning) return 1;
+                return 0;
+            }
+            var homeStatus = IndexManager.GetUserHomeStatus(sensor.UserId);
+            if (homeStatus == SensorStatus.Danger || homeStatus == SensorStatus.Warning) return 1;
+            if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive) return 0;
+            return null;
+        }
+
+        //like door lock
+        if (sensor.GroupType == SensorGroupType.HomeSecurityDepend)
+        {
+            var homeSecurity = CacheManager.GetUserSecurityActivate(sensor.UserId);
+            if (homeSecurity) return 0;
+            return 1;
+        }
+
+        return null;
+    }
 
     private async Task SendStatus(string userId)
     {
-        if (CacheManager.HasUserStatusChanged(userId)&&(await _applicationUserService.GetSecurityStatus(userId)))
+        var isLocked=CacheManager.GetUserLockSendStatus(userId);
+        if(isLocked) return;
+        CacheManager.SetUserLockSendStatus(userId, true);
+        if (CacheManager.HasUserStatusChanged(userId) && (CacheManager.GetUserSecurityActivate(userId)))
         {
             SoundAlertAsync(userId, CacheManager.GetAlertLevel(userId));
         }
@@ -177,13 +189,16 @@ public class SecurityManager : ISecurityManager
         var changedZones = CacheManager.GetChangedZones(userId);
         foreach (var zone in changedZones)
         {
-            await _userWebSocketManager.SendMessage($"{zone.Id},{(int)IndexManager.GetZoneStatus(zone.Id, userId)}", SocketMessageType.ZNo, userId);
+            Console.WriteLine("changed zone");
+            await _userWebSocketManager.SendMessage($"{zone.ZoneId},{(int)IndexManager.GetZoneStatus(zone.ZoneId, userId)}", SocketMessageType.ZNo, userId);
         }
         var changedSensors = CacheManager.GetChangedSensors(userId);
         foreach (var changedSensor in changedSensors)
         {
-            await _userWebSocketManager.SendMessage($"{changedSensor.Id},{(int)IndexManager.GetSensorStatus(changedSensor.Id, changedSensor.ZoneId, userId)},{_sensorDetailService.GetSensPercent(changedSensor, CacheManager.GetSensorsLastValue(changedSensor.Id))}", SocketMessageType.SNo, userId);
+            Console.WriteLine("changed sensor");
+            await _userWebSocketManager.SendMessage($"{changedSensor.SensorId},{(int)IndexManager.GetSensorStatus(changedSensor.SensorId, changedSensor.ZoneId, userId)},{_sensorDetailService.GetSensPercent(CacheManager.GetSensorsLastValue(changedSensor.SensorId), changedSensor.IsDigital, changedSensor.NeutralValue)}", SocketMessageType.SNo, userId);
         }
+        CacheManager.SetUserLockSendStatus(userId, false);
     }
 
 
@@ -235,13 +250,12 @@ public class SecurityManager : ISecurityManager
     #region Ctor
 
 
-    public SecurityManager(ISensorDetailService sensorDetailService, IUserSocketManager userSocketManager, IUserSmsManager userSmsManager, IUserWebSocketManager userWebSocketManager, IApplicationUserService applicationUserService, IHomeUdpSocketManager homeUdpSocketManager, IMapManager mapManager)
+    public SecurityManager(ISensorDetailService sensorDetailService, IUserSocketManager userSocketManager, IUserSmsManager userSmsManager, IUserWebSocketManager userWebSocketManager, IHomeUdpSocketManager homeUdpSocketManager, IMapManager mapManager)
     {
         _sensorDetailService = sensorDetailService;
         _userSocketManager = userSocketManager;
         _userSmsManager = userSmsManager;
         _userWebSocketManager = userWebSocketManager;
-        _applicationUserService = applicationUserService;
         _homeUdpSocketManager = homeUdpSocketManager;
         _mapManager = mapManager;
     }

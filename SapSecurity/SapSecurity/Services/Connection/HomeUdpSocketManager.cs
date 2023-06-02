@@ -1,17 +1,16 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SapSecurity.Infrastructure;
 using SapSecurity.Infrastructure.Extensions;
-using SapSecurity.Model;
 using SapSecurity.Model.Types;
 using SapSecurity.Services.Caching;
 using SapSecurity.Services.Db;
 using SapSecurity.Services.Notification;
 using SapSecurity.Services.Security;
 using SapSecurity.Services.SocketManager;
+using SapSecurity.ViewModel;
 
 namespace SapSecurity.Services.Connection;
 
@@ -40,30 +39,37 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
     /// save socket info
     /// </summary>
     /// <param name="socket">connected client</param>
+    /// <param name="endPoint"></param>
     /// <param name="message">received message</param>
     /// <param name="socketId">connected socket id</param>
-    /// <param name="finalizeCallBack">call back after work finish</param>
     /// <returns></returns>
     public async Task CallBack(UdpClient socket, IPEndPoint endPoint, string message, Guid socketId)
     {
         try
         {
+
+            var scope = _serviceScopeFactory.CreateScope();
+            var sensorDetailService = scope.ServiceProvider.GetService<ISensorDetailService>();
+            var sensorLogService = scope.ServiceProvider.GetService<ISensorLogService>();
+            var securityManager = scope.ServiceProvider.GetService<ISecurityManager>();
+            if (securityManager == null || sensorDetailService == null || sensorLogService == null) return;
             if (message.Contains($"<{SocketMessageType.Sen}>"))
             {
-                await LogAsync(socket, endPoint, message);
+                await LogAsync(socket, endPoint, message, sensorDetailService, sensorLogService, securityManager);
             }
             else if (message.Contains($"<{SocketMessageType.Act}>"))
             {
 
                 var sensorId = _socketManager.ReadMessage(message, SocketMessageType.Act.ToString());
-                var sensor = HomeSocketHandle.GetSensorId(sensorId);
+                var sensor = await sensorDetailService.GetSensorInfoByIdentifier(sensorId);
                 if (sensor != null)
-                    IndexManager.SetAliveMessage(sensor.Value);
+                    IndexManager.SetAliveMessage(sensor.SensorId);
             }
             else
             {
                 //ignore
             }
+            scope.Dispose();
         }
         catch (Exception e)
         {
@@ -80,19 +86,17 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
     /// <param name="socket"></param>
     /// <param name="endPoint"></param>
     /// <param name="message"></param>
-    /// <param name="finalizeCallBack"></param>
+    /// <param name="sensorDetailService"></param>
+    /// <param name="sensorLogService"></param>
+    /// <param name="securityManager"></param>
     /// <returns></returns>
-    private async Task LogAsync(UdpClient socket, IPEndPoint endPoint, string message)
+    private async Task LogAsync(UdpClient socket, IPEndPoint endPoint, string message, ISensorDetailService sensorDetailService, ISensorLogService sensorLogService, ISecurityManager securityManager)
     {
         try
         {
-            var scope = _serviceScopeFactory.CreateScope();
-            var _sensorDetailService = scope.ServiceProvider.GetService<ISensorDetailService>();
-            var _sensorLogService = scope.ServiceProvider.GetService<ISensorLogService>();
-            var _securityManager = scope.ServiceProvider.GetService<ISecurityManager>();
             var listOfSens = message.Split($"</{SocketMessageType.Sen}>");
-            int? lastSensor = null;
-            double? lastValue = null;
+            SensorInfoModel? lastSensor = null;
+            int? lastValue = null;
             foreach (var sense in listOfSens)
             {
                 var messageInfo = _socketManager.ReadMessage(sense, SocketMessageType.Sen.ToString());
@@ -101,40 +105,33 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
                 if (messageSplit.Length != 2) continue;
                 var sensorId = messageSplit[0];
                 var log = messageSplit[1];
-                var sensor = HomeSocketHandle.GetSensorId(sensorId);
-                if (sensor == null || sensor == 0)
+                var sensor = await sensorDetailService.GetSensorInfoByIdentifier(sensorId);
+                if (sensor == null)
                 {
                     Console.WriteLine($"invalid sensor: {sensorId}, value: {log}");
                     continue;
                 }
-                var check = double.TryParse(log, out var status);
+                var check = int.TryParse(log, out var status);
                 if (check)
                 {
                     lastSensor = sensor;
                     lastValue = status;
-                    _logger.LogInformation($"status: {status}, sensor: {sensor}");
-                    IndexManager.SetAliveMessage(sensor.Value);
-                    await _sensorLogService.LogAsync(status, sensor.Value);
+                    IndexManager.SetAliveMessage(sensor.SensorId);
+                    await sensorLogService.LogAsync(status, sensor.SensorId);
                 }
             }
-            if (lastSensor != null)
+            if (lastSensor != null && lastValue != null)
             {
-                var sensorInfo = await _sensorDetailService.GetByIdAsync(lastSensor.Value);
-                if (sensorInfo != null && lastValue != null)
+                var callBackMessage = await securityManager.SensReceiver(lastSensor, lastValue.Value);
+                if (callBackMessage != null)
                 {
-                    await _securityManager.SensReceiver(sensorInfo, lastValue.Value);
-                    {
-                        var callBackMessage = CacheManager.GetUserSecurityStatus(sensorInfo).ToString();
-                        socket.Send(
-                            Encoding.ASCII.GetBytes(
-                                callBackMessage
-                                )
-                            , endPoint);
-                        ConsoleExtension.WriteAppInfo($"Sent message to udp: {callBackMessage}");
-                    }
+                    socket.Send(
+                        BitConverter.GetBytes((int)callBackMessage)
+                        , endPoint);
+                    CacheManager.SetSensorLastMessage(lastSensor.SensorId, (int)callBackMessage);
+                    ConsoleExtension.WriteAppInfo($"Sent message to udp: {callBackMessage}");
                 }
             }
-            scope.Dispose();
         }
         catch (Exception e)
         {
@@ -148,13 +145,11 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
     #endregion
     #region Ctor
 
-    public HomeUdpSocketManager(ISocketUdpManager socketManager, ISensorLogService sensorLogService, ILogger<HomeUdpSocketManager> logger, HomeSocketNotificationManager notificationManager, ISensorDetailService sensorDetailService, IServiceScopeFactory serviceScopeFactory) : base(notificationManager)
+    public HomeUdpSocketManager(ISocketUdpManager socketManager, ILogger<HomeUdpSocketManager> logger, HomeSocketNotificationManager notificationManager, IServiceScopeFactory serviceScopeFactory) : base(notificationManager)
     {
         _socketManager = socketManager;
-        //_sensorLogService = sensorLogService;
         _logger = logger;
         _serviceScopeFactory = serviceScopeFactory;
-        //_sensorDetailService = sensorDetailService;
     }
 
 

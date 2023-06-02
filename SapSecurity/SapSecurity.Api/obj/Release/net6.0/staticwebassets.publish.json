@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "OS9lcXkRlVEZpkPbHzC5j3MHTyhC2GVmQ3H3I7j3e5A=",
+  "Source": "SapSecurity.Api",
+  "BasePath": "_content/SapSecurity.Api",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

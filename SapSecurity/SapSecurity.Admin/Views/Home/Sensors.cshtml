@@ -39,7 +39,16 @@
                             <span id="senS_@item.Id">@item.Status.ToString()</span>
                         </td>
                         <td>
-                            <span class="badge bg-primary rounded-pill" id="senP_@item.Id">@item.SensPercent</span>
+                            @if (item.IsDigital)
+                            {
+                                <span>-</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary rounded-pill" id="senP_@item.Id">
+                                    @item.SensPercent
+                                </span>
+                            }
                         </td>
                         <td>
                             <span id="sen_@item.Identifier">-</span>
@@ -53,11 +62,22 @@
         </table>
     </div>
 </div>
-
+<div class="row mt-5">
+    <p>Logs</p>
+    <div class="col-md-12" id="logs">
+    </div>
+</div>
 @section Scripts
     {
     <script>
         webSocket();
+        ClearLogs();
+        function ClearLogs() {
+            setTimeout(function() {
+                document.getElementById('logs').innerHTML = '';
+                ClearLogs();
+            }, 30000);
+        }
         function webSocket() {
             var socket = new WebSocket("ws://109.122.199.199:7080/websocket");
             socket.onopen = function(e) {
@@ -131,6 +151,9 @@
         function SetSensorValue(message) {
             message = message.replace('</Adm>', '');
             message = message.replace('<Adm>', '');
+            let p = document.createElement("p");
+            p.innerText = message;
+            document.getElementById('logs').prepend(p);
             var sp = message.split('<Sen>');
             for (var i = 0; i < sp.length; i++) {
                 var t = sp[i];

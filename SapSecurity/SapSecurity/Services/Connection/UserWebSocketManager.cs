@@ -35,23 +35,25 @@ public class UserWebSocketManager : ConnectionManager, IUserWebSocketManager
     {
         try
         {
+            var toRemove = new List<UserWebSocketInfo>();
             if (UserSocketHandle.UserWebSocketInfos.Any(x => x.UserId == userId))
             {
                 foreach (var info in UserSocketHandle.UserWebSocketInfos.Where(x => x.UserId == userId))
                 {
                     try
                     {
-                        Console.WriteLine("web socket send");
                         await info.Handler.SendAsync(
                             new ArraySegment<byte>(Encoding.ASCII.GetBytes(messageType.GetMessageInFormat(message))), WebSocketMessageType.Text, true,
                             CancellationToken.None);
                     }
                     catch (Exception e)
                     {
+                        toRemove.Add(info);
                         _logger.LogError(e.Message, e);
                         DisconnectCallBack(info);
                     }
                 }
+                toRemove.ForEach(x => UserSocketHandle.UserWebSocketInfos.Remove(x));
 
             }
         }

@@ -62,7 +62,10 @@ public class SensorDetailService : ISensorDetailService
     {
         if (!sensor.IsActive) return 0;
         var lastLog = await _sensorLogService.GetLastLogAsync(sensor.Id);
-        return GetSensPercent(lastLog?.Status, sensor.SensorGroup.IsDigital, sensor.NeutralValue ?? sensor.SensorGroup.NeutralValue ?? 0);
+        var neutralValue = sensor.NeutralValue;
+        if (neutralValue == null) neutralValue = sensor.SensorGroup.NeutralValue;
+        if (neutralValue == null) neutralValue = 0;
+        return GetSensPercent(lastLog?.Status, sensor.SensorGroup.IsDigital, (int)neutralValue);
     }
 
     public int GetSensPercent(int? lastValue, bool isDigital, double neutralValue)

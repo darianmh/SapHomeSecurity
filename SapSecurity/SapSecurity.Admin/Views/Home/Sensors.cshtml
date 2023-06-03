@@ -21,6 +21,7 @@
         <table class="table table-bordered table-hover table-striped table-sm table-responsive">
             <thead class="table-success">
                 <tr>
+                    <th>شناسه سنسور</th>
                     <th>نام سنسور</th>
                     <th>وضعیت</th>
                     <th>درصد</th>
@@ -29,9 +30,12 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model.OrderBy(x => x.ZoneTitle))
                 {
                     <tr>
+                        <td>
+                            <p> <span>@item.Id</span>/<span>@item.Identifier</span>
+                        </td>
                         <td>
                             <p> <span>@item.GroupTitle</span>/<span>@item.ZoneTitle</span>/<span>@item.SensorName</span></p>
                         </td>
@@ -64,8 +68,17 @@
 </div>
 <div class="row mt-5">
     <p>Logs</p>
-    <div class="col-md-12" id="logs">
-    </div>
+    @foreach (var item in Model)
+    {
+        <div class="col-md-5 overflow-scroll m-2 p-2 border border-1">
+            <div class="row">
+                <p> <span>@item.GroupTitle</span>/<span>@item.ZoneTitle</span>/<span>@item.SensorName</span></p>
+                <div class="col-md-12 logs" id="logs_@item.Identifier" style="height: 200px !important;"></div>
+            </div>
+        </div>
+    }
+    <p>Others</p>
+    <div id="others"></div>
 </div>
 @section Scripts
     {
@@ -74,9 +87,14 @@
         ClearLogs();
         function ClearLogs() {
             setTimeout(function() {
-                document.getElementById('logs').innerHTML = '';
+                var logs = document.getElementsByClassName('logs');
+                for (var i = 0; i < logs.length; i++) {
+                    logs[i].innerHTML = '';
+                }
+
+
                 ClearLogs();
-            }, 30000);
+            }, 120000);
         }
         function webSocket() {
             var socket = new WebSocket("ws://109.122.199.199:7080/websocket");
@@ -86,24 +104,30 @@
                 socket.send('<AId>' + userId + '</AId>');
             }
             socket.onmessage = function(data) {
-                var message = data.data;
-                if (message.includes('<Adm>')) {
-                    SetSensorValue(message);
-                }
+                try {
+                    var message = data.data;
+                    if (message.includes('<Adm>')) {
+                        SetSensorValue(message);
+                    }
 
-                if (message.includes('<SNo>')) {
-                    SetSensorPercent(message);
-                }
+                    if (message.includes('<SNo>')) {
+                        SetSensorPercent(message);
+                    }
 
-                if (message.includes('<Adl>')) {
-                    SetSensorAlive(message)
+                    if (message.includes('<Adl>')) {
+                        SetSensorAlive(message)
+                    }
                 }
-                console.log(data);
+                catch (e) {
+                    document.getElementById('others').innerHTML = '<p>' + message + '</p>';
+                }
             }
             socket.onerror = function(data) {
+                //webSocket();
                 console.log(data);
             }
             socket.onclose = function(data) {
+                //webSocket();
                 console.log(data);
             }
         }
@@ -119,9 +143,9 @@
                     if (t2.length == 2) {
                         var sId = t2[0];
                         var status = t2[1];
-                        var percent = t2[1];
+                        var percent = t2[2];
                         var statusName = GetStatusName(status);
-                        document.getElementById('senS_' + sId).innerHTML = status;
+                        document.getElementById('senS_' + sId).innerHTML = statusName;
                         document.getElementById('senP_' + sId).innerHTML = percent;
                     }
                 }
@@ -153,7 +177,6 @@
             message = message.replace('<Adm>', '');
             let p = document.createElement("p");
             p.innerText = message;
-            document.getElementById('logs').prepend(p);
             var sp = message.split('<Sen>');
             for (var i = 0; i < sp.length; i++) {
                 var t = sp[i];
@@ -165,6 +188,7 @@
                         var sId = t2[0];
                         var val = t2[1];
                         document.getElementById('sen_' + sId).innerHTML = val;
+                        document.getElementById('logs_' + sId).prepend(p);
                     }
                 }
             }

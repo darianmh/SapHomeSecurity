@@ -189,13 +189,11 @@ public class SecurityManager : ISecurityManager
         var changedZones = CacheManager.GetChangedZones(userId);
         foreach (var zone in changedZones)
         {
-            Console.WriteLine("changed zone");
             await _userWebSocketManager.SendMessage($"{zone.ZoneId},{(int)IndexManager.GetZoneStatus(zone.ZoneId, userId)}", SocketMessageType.ZNo, userId);
         }
         var changedSensors = CacheManager.GetChangedSensors(userId);
         foreach (var changedSensor in changedSensors)
         {
-            Console.WriteLine("changed sensor");
             await _userWebSocketManager.SendMessage($"{changedSensor.SensorId},{(int)IndexManager.GetSensorStatus(changedSensor.SensorId, changedSensor.ZoneId, userId)},{_sensorDetailService.GetSensPercent(CacheManager.GetSensorsLastValue(changedSensor.SensorId), changedSensor.IsDigital, changedSensor.NeutralValue)}", SocketMessageType.SNo, userId);
         }
         CacheManager.SetUserLockSendStatus(userId, false);

@@ -58,13 +58,13 @@ public class SecurityManager : ISecurityManager
                 if (sensor.NeutralValue != 0)
                     index = Convert.ToInt32((sensor.NeutralValue - sensValue) / sensor.NeutralValue * 100);
             }
-            else if (sensor.WeightPercent != 100)
-            {
-                //for something like weight sensors
-                var sensorLastIndex = IndexManager.GetSensorIndex(sensor.SensorId);
-                index = weight * sensor.WeightPercent / 100;
-                index += sensorLastIndex;
-            }
+            //else if (sensor.WeightPercent != 100)
+            //{
+            //    //for something like weight sensors
+            //    var sensorLastIndex = IndexManager.GetSensorIndex(sensor.SensorId);
+            //    index = weight * sensor.WeightPercent / 100;
+            //    index += sensorLastIndex;
+            //}
             IndexManager.SetIndex(sensor, index, sensValue);
         }
         else
@@ -135,7 +135,12 @@ public class SecurityManager : ISecurityManager
         {
             if (!CacheManager.GetUserSecurityActivate(sensor.UserId)) return 0;
             var zoneStatus = IndexManager.GetZoneStatus(sensor.ZoneId, sensor.UserId);
-            if (zoneStatus == SensorStatus.Danger || zoneStatus == SensorStatus.Warning) return 1;
+            if (zoneStatus == SensorStatus.Danger || zoneStatus == SensorStatus.Warning)
+            {
+                //spray ones
+                CacheManager.SetSpecialMessage(sensor.SensorId, 0, false);
+                return 1;
+            }
             if (zoneStatus == SensorStatus.Active || zoneStatus == SensorStatus.DeActive) return 0;
             return null;
         }
@@ -143,10 +148,12 @@ public class SecurityManager : ISecurityManager
         //like other alarms
         if (sensor.GroupType == SensorGroupType.HomeReceiver)
         {
-
             if (!CacheManager.GetUserSecurityActivate(sensor.UserId)) return 0;
             var homeStatus = IndexManager.GetUserHomeStatus(sensor.UserId);
-            if (homeStatus == SensorStatus.Danger || homeStatus == SensorStatus.Warning) return 1;
+            if (homeStatus == SensorStatus.Danger || homeStatus == SensorStatus.Warning)
+            {
+                return 1;
+            }
             if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive) return 0;
             return null;
         }
@@ -178,8 +185,8 @@ public class SecurityManager : ISecurityManager
 
     private async Task SendStatus(string userId)
     {
-        var isLocked=CacheManager.GetUserLockSendStatus(userId);
-        if(isLocked) return;
+        var isLocked = CacheManager.GetUserLockSendStatus(userId);
+        if (isLocked) return;
         CacheManager.SetUserLockSendStatus(userId, true);
         if (CacheManager.HasUserStatusChanged(userId) && (CacheManager.GetUserSecurityActivate(userId)))
         {

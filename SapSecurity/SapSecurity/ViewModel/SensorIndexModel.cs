@@ -8,7 +8,7 @@ namespace SapSecurity.ViewModel
 {
     public class SensorIndexModel
     {
-        public SensorIndexModel(int sensorId, int zoneId, int groupId, string userId, int indexValue, DateTime createDate, int? sensorValue)
+        public SensorIndexModel(int sensorId, int zoneId, int groupId, string userId, int indexValue, DateTime createDate, int? sensorValue, int? weightPercent)
         {
             SensorValue = sensorValue;
             SensorId = sensorId;
@@ -17,6 +17,7 @@ namespace SapSecurity.ViewModel
             UserId = userId;
             IndexValue = indexValue;
             CreateDate = createDate;
+            WeightPercent = weightPercent;
         }
 
         public int? SensorValue { get; set; }
@@ -26,5 +27,6 @@ namespace SapSecurity.ViewModel
         public string UserId { get; set; }
         public int IndexValue { get; set; }
         public DateTime CreateDate { get; set; }
+        public int? WeightPercent { get; set; }
     }
 }

@@ -33,7 +33,7 @@ namespace SapSecurity.Services.Caching
             }
             else
             {
-                Index.Add(new SensorIndexModel(sensor.SensorId, sensor.ZoneId, sensor.GroupId, sensor.UserId, indexValue, DateTime.Now, sensValue));
+                Index.Add(new SensorIndexModel(sensor.SensorId, sensor.ZoneId, sensor.GroupId, sensor.UserId, indexValue, DateTime.Now, sensValue, sensor.WeightPercent));
                 CacheManager.SetChangedSensor(sensor.UserId, sensor.SensorId);
                 CacheManager.SetChangedZone(sensor.UserId, sensor.ZoneId);
             }
@@ -55,8 +55,20 @@ namespace SapSecurity.Services.Caching
             var sum = 0;
             foreach (var user in userIndexes)
             {
+                if (user.WeightPercent == null)
+                    sum += user.IndexValue;
+                else
+                {
+                    if (user.SensorId == 30)
+                    {
 
-                sum += user.IndexValue;
+                    }
+                    var now = DateTime.Now;
+                    var defSeconds = (now - user.CreateDate).Seconds;
+                    var tempIndex = (user.IndexValue * (int)user.WeightPercent / 100) * defSeconds;
+                    if (tempIndex > 100) tempIndex = 100;
+                    sum += tempIndex;
+                }
             }
 
             return sum;

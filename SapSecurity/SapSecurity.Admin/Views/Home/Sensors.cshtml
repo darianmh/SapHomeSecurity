@@ -9,8 +9,13 @@
 <div class="row">
     <div class="col-md-12 p-3">
         <div class="btn-group">
-            <a class="btn btn-danger">Spray</a>
-            <a class="btn bg-warning">Alarm</a>
+            <a asp-action="Spray" class="btn btn-danger">Spray</a>
+            <a asp-action="Alarm" asp-route-message="1" class="btn bg-warning">Alarm on</a>
+            <a asp-action="Alarm" asp-route-message="0" class="btn bg-warning">Alarm off</a>
+            <a asp-action="HouseAlarm" asp-route-alertLevel="High" class="btn bg-warning">Alarm high</a>
+            <a asp-action="HouseAlarm" asp-route-alertLevel="Medium" class="btn bg-warning">Alarm medium</a>
+            <a asp-action="HouseAlarm" asp-route-alertLevel="Low" class="btn bg-warning">Alarm low</a>
+            <a asp-action="HouseAlarm" asp-route-alertLevel="None" class="btn bg-warning">Alarm none</a>
         </div>
     </div>
 </div>
@@ -27,7 +32,8 @@
                     <th>درصد</th>
                     <th>آخرین مقدار</th>
                     <th>زمان آحرین پیام</th>
-                    <<th>#</th>
+                    <
+                    <th>#</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,7 +41,7 @@
                 {
                     <tr id="si_@item.Id">
                         <td>
-                           <a href="#i_@item.Id"> <p> <span>@item.Id</span>/<span>@item.Identifier</span></p></a>
+                            <a href="#i_@item.Id"> <p> <span>@item.Id</span>/<span>@item.Identifier</span></p></a>
                         </td>
                         <td>
                             <p> <span>@item.GroupTitle</span>/<span>@item.ZoneTitle</span>/<span>@item.SensorName</span></p>

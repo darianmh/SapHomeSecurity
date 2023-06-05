@@ -18,7 +18,11 @@ public class SensorDetailService : ISensorDetailService
     #endregion
     #region Methods
 
-
+    public async Task Update(SensorDetail sensorDetail)
+    {
+        _sensorDetailRepository.Update(sensorDetail);
+        await _sensorDetailRepository.SaveChangeAsync();
+    }
 
     public async Task<SensorDetail?> GetByIdentifierAsync(string identifier)
         => await _sensorDetailRepository.GetByIdentifier(identifier);

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using SapSecurity.Infrastructure.Repositories;
 using SapSecurity.Model;
 using SapSecurity.Model.Types;
@@ -39,6 +40,11 @@ public class SensorGroupService : ISensorGroupService
 
     }
 
+    public async Task<List<SelectListItem>> GetAllSelectList()
+    {
+        var all = await _sensorGroupRepository.GetAllAsync();
+        return all.Select(x => new SelectListItem() { Text = x.Title, Value = x.Id.ToString() }).ToList();
+    }
 
     #endregion
     #region Utilities
@@ -75,7 +81,7 @@ public class SensorGroupService : ISensorGroupService
     {
         return sensorDetails.Where(x => x.UserId == userId).Select(async sensor =>
         {
-            var sensPercent =await _sensorDetailService.GetSensPercent(sensor);
+            var sensPercent = await _sensorDetailService.GetSensPercent(sensor);
             var sensorStatus = IndexManager.GetSensorStatus(sensor.Id, sensor.ZoneId, userId);
             return _mapper.Map(sensor, sensorStatus, sensor.SensorLogs.MaxBy(x => x.Id)?.Status, sensPercent);
         }).Select(x => x.Result).ToList();
@@ -86,7 +92,7 @@ public class SensorGroupService : ISensorGroupService
     #region Ctor
 
 
-    public SensorGroupService( IServiceScopeFactory serviceScopeFactory)
+    public SensorGroupService(IServiceScopeFactory serviceScopeFactory)
     {
         var scope = serviceScopeFactory.CreateScope();
         _sensorGroupRepository = scope.ServiceProvider.GetService<ISensorGroupRepository>();

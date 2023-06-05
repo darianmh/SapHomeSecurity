@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using SapSecurity.Infrastructure.Repositories;
 using SapSecurity.Model;
 using SapSecurity.Model.Types;
@@ -25,6 +26,11 @@ public class ZoneService : IZoneService
         return list.Select(model => _mapper.Map(model, IndexManager.GetZoneStatus(model.Id, model.UserId))).ToList();
     }
 
+    public async Task<List<SelectListItem>> GetAllSelectList()
+    {
+        var all = await _zoneRepository.GetAllAsync();
+        return all.Select(x => new SelectListItem() { Text = x.Title, Value = x.Id.ToString() }).ToList();
+    }
 
     #endregion
     #region Utilities
@@ -32,7 +38,7 @@ public class ZoneService : IZoneService
     #endregion
     #region Ctor
 
-    public ZoneService( IServiceScopeFactory serviceScopeFactory)
+    public ZoneService(IServiceScopeFactory serviceScopeFactory)
     {
         var scope = serviceScopeFactory.CreateScope();
         _zoneRepository = scope.ServiceProvider.GetService<IZoneRepository>();

@@ -1,0 +1,56 @@
+﻿@model SapSecurity.Model.SensorDetail
+
+@{
+    ViewBag.Title = "Edit Sensor";
+    Layout = "_Layout";
+}
+
+<h2>Edit Sensor</h2>
+<form method="post">
+    @Html.HiddenFor(detail => detail.Id)
+    <div class="mb-3 mt-3">
+        <label asp-for="Identifier"></label>
+        <input class="form-control" asp-for="Identifier">
+    </div>
+
+    <div class="mb-3 mt-3">
+        <label class="form-check-label">
+            @if (@Model.IsActive)
+            {
+                <input class="form-check-input" type="checkbox" name="IsActive" id="IsActive" checked="checked">
+            }
+            else
+            {
+                <input class="form-check-input" type="checkbox" name="IsActive" id="IsActive">
+            }
+            IsActive
+        </label>
+    </div>
+    <div class="mb-3 mt-3">
+        <label asp-for="NeutralValue"></label>
+        <input class="form-control" asp-for="NeutralValue">
+    </div>
+    <div class="mb-3 mt-3">
+        <label asp-for="SensorGroupId"></label>
+        <select asp-for="SensorGroupId" name="SensorGroupId" asp-items="(List<SelectListItem>)ViewBag.Groups"></select>
+    </div>
+    <div class="mb-3 mt-3">
+        <label asp-for="UserId"></label>
+        <input class="form-control" asp-for="UserId">
+    </div>
+    <div class="mb-3 mt-3">
+        <label asp-for="Title"></label>
+        <input class="form-control" asp-for="Title">
+    </div>
+    <div class="mb-3 mt-3">
+        <label asp-for="Weight"></label>
+        <input class="form-control" asp-for="Weight">
+    </div>
+    <div class="mb-3 mt-3">
+        <label asp-for="ZoneId"></label>
+        <select asp-for="ZoneId" name="ZoneId" asp-items="(List<SelectListItem>)ViewBag.Zones"></select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <a asp-controller="Home" asp-action="Sensors" asp-route-userId="@Model.UserId" class="btn btn-primary">Sensors</a>
+</form>

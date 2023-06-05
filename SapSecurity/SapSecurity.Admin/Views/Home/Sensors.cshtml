@@ -27,14 +27,15 @@
                     <th>درصد</th>
                     <th>آخرین مقدار</th>
                     <th>زمان آحرین پیام</th>
+                    <<th>#</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model.OrderBy(x => x.ZoneTitle))
                 {
-                    <tr>
+                    <tr id="si_@item.Id">
                         <td>
-                            <p> <span>@item.Id</span>/<span>@item.Identifier</span>
+                           <a href="#i_@item.Id"> <p> <span>@item.Id</span>/<span>@item.Identifier</span></p></a>
                         </td>
                         <td>
                             <p> <span>@item.GroupTitle</span>/<span>@item.ZoneTitle</span>/<span>@item.SensorName</span></p>
@@ -60,6 +61,9 @@
                         <td>
                             <span id="alv_@item.Identifier">-</span>
                         </td>
+                        <td>
+                            <a asp-controller="SensorDetail" asp-action="Index" asp-route-sensorDetailId="@item.Id">ویرایش</a>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -70,9 +74,9 @@
     <p>Logs</p>
     @foreach (var item in Model)
     {
-        <div class="col-md-5 overflow-scroll m-2 p-2 border border-1">
+        <div class="col-md-5 overflow-scroll m-2 p-2 border border-1" id="i_@item.Id">
             <div class="row">
-                <p> <span>@item.GroupTitle</span>/<span>@item.ZoneTitle</span>/<span>@item.SensorName</span></p>
+                <a href="#si_@item.Id"><p> <span>@item.GroupTitle</span>/<span>@item.ZoneTitle</span>/<span>@item.SensorName</span></p></a>
                 <div class="col-md-12 logs" id="logs_@item.Identifier" style="height: 200px !important;"></div>
             </div>
         </div>

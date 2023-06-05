@@ -10,4 +10,12 @@
     <ProjectReference Include="..\SapSecurity\SapSecurity.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\SensorDetail\Index.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\SensorDetail\Index.cshtml" />
+  </ItemGroup>
+
 </Project>

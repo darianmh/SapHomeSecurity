@@ -30,7 +30,7 @@ public static class CacheManager
     private static ConcurrentDictionary<string, List<int>>? _changedZones;
 
 
-    private static ConcurrentDictionary<string,bool> _userLockSendStatus=new();
+    private static ConcurrentDictionary<string, bool> _userLockSendStatus = new();
 
 
 
@@ -64,7 +64,11 @@ public static class CacheManager
 
 
     private static BlockingCollection<SensorInfoModel>? _sensorInfos;
-    public static BlockingCollection<SensorInfoModel> SensorInfos => _sensorInfos ??= new BlockingCollection<SensorInfoModel>();
+    public static BlockingCollection<SensorInfoModel> SensorInfos
+    {
+        get => _sensorInfos ??= new BlockingCollection<SensorInfoModel>();
+        set => _sensorInfos = value;
+    }
 
 
     private static readonly ConcurrentDictionary<int, SpecialMessageModel> SensorSpecialMessages = new();
@@ -76,7 +80,7 @@ public static class CacheManager
     {
         if (_userLockSendStatus.ContainsKey(userId))
         {
-            _userLockSendStatus[userId]= isLock;
+            _userLockSendStatus[userId] = isLock;
         }
         else
         {
@@ -85,7 +89,7 @@ public static class CacheManager
     }
     public static bool GetUserLockSendStatus(string userId)
     {
-        if(_userLockSendStatus.TryGetValue(userId,out var isLock))
+        if (_userLockSendStatus.TryGetValue(userId, out var isLock))
             return isLock;
         return false;
     }

@@ -6,6 +6,7 @@ namespace SapSecurity.Services.Db;
 
 public interface ISensorDetailService
 {
+    Task Update(SensorDetail sensorDetail);
     /// <summary>
     /// find by unique key
     /// </summary>

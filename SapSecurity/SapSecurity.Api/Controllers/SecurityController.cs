@@ -108,6 +108,7 @@ namespace SapSecurity.Api.Controllers
             {
                 return Unauthorized();
             }
+            if (model.SecurityState) Thread.Sleep(10000);
             await _applicationUserService.SetSecurityStatus(user, model.SecurityState);
             //send active status to user
             await _userWebSocketManager.SendMessage($"{model.SecurityState}", SocketMessageType.ANo, user);
@@ -124,6 +125,7 @@ namespace SapSecurity.Api.Controllers
             }
 
             CacheManager.ResetSpecialMessages(user);
+            CacheManager.ResetZoneSensorValue(user);
             return Ok();
         }
 
@@ -276,6 +278,27 @@ namespace SapSecurity.Api.Controllers
         }
 
 
+
+
+        [HttpGet("/Alarm")]
+        public async Task<IActionResult> Alarm(int message)
+        {
+            CacheManager.SetSpecialMessage(3, message, false);
+            return Ok();
+        }
+        [HttpGet("/Spray")]
+        public async Task<IActionResult> Spray()
+        {
+            CacheManager.SetSpecialMessage(5, 1, true);
+            return Ok();
+        }
+
+        [HttpGet("/HouseAlarm")]
+        public async Task<IActionResult> HouseAlarm(AlertLevel alertLevel)
+        {
+            _securityManager.SoundAlertAsync("1", alertLevel);
+            return Ok();
+        }
         #endregion
         #region Utilities
 

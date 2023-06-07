@@ -18,7 +18,7 @@ public static class CacheManager
         }
     }
 
-
+    public static ConcurrentDictionary<int, int> ZoneSensorsSendCount = new ConcurrentDictionary<int, int>();
     public static ConcurrentDictionary<string, List<int>> ChangedZones
     {
         get
@@ -76,6 +76,45 @@ public static class CacheManager
     #endregion
     #region Methods
 
+    public static void ResetZoneSensorValue(string userId)
+    {
+        var zones = SensorInfos.Where(x => x.UserId == userId).Select(x => x.ZoneId).ToList();
+        zones.ForEach(x => ResetZoneSensorValue(x));
+    }
+    public static void ResetZoneSensorValue(int zoneId)
+    {
+        if (ZoneSensorsSendCount.ContainsKey(zoneId))
+        {
+            ZoneSensorsSendCount[zoneId] = 0;
+        }
+        else
+        {
+            ZoneSensorsSendCount.TryAdd(zoneId, 0);
+        }
+    }
+    public static int GetZoneSensorValue(int zoneId)
+    {
+        if (ZoneSensorsSendCount.ContainsKey(zoneId))
+        {
+            return ZoneSensorsSendCount[zoneId];
+        }
+        else
+        {
+            ZoneSensorsSendCount.TryAdd(zoneId, 1);
+            return 1;
+        }
+    }
+    public static void SetZoneSensorValue(int zoneId)
+    {
+        if (ZoneSensorsSendCount.ContainsKey(zoneId))
+        {
+            ZoneSensorsSendCount[zoneId]++;
+        }
+        else
+        {
+            ZoneSensorsSendCount.TryAdd(zoneId, 1);
+        }
+    }
     public static void SetUserLockSendStatus(string userId, bool isLock)
     {
         if (_userLockSendStatus.ContainsKey(userId))

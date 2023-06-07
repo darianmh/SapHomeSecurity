@@ -49,6 +49,7 @@ public class SecurityManager : ISecurityManager
 
     public async Task<int?> SensReceiver(SensorInfoModel sensor, int sensValue)
     {
+        //if (sensor.IsActive) return null;
         if (sensValue != sensor.NeutralValue)
         {
             var weight = sensor.Weight;
@@ -58,22 +59,20 @@ public class SecurityManager : ISecurityManager
                 if (sensor.NeutralValue != 0)
                     index = Convert.ToInt32((sensor.NeutralValue - sensValue) / sensor.NeutralValue * 100);
             }
-            //else if (sensor.WeightPercent != 100)
-            //{
-            //    //for something like weight sensors
-            //    var sensorLastIndex = IndexManager.GetSensorIndex(sensor.SensorId);
-            //    index = weight * sensor.WeightPercent / 100;
-            //    index += sensorLastIndex;
-            //}
             IndexManager.SetIndex(sensor, index, sensValue);
         }
         else
         {
             IndexManager.SetIndex(sensor, 0, sensValue);
         }
+        //send indexes to user 
+        await _userWebSocketManager.SendMessage(
+            string.Join(" , ", IndexManager.Index.Select(x => $"{x.SensorId}: {x.IndexValue}")), SocketMessageType.Ind,
+            sensor.UserId);
         await MeasureDangerPossibility(sensor.UserId);
 
-        return GetSensorResponse(sensor);
+        var response = GetSensorResponse(sensor);
+        return response;
 
     }
 
@@ -133,15 +132,28 @@ public class SecurityManager : ISecurityManager
         //like spray
         if (sensor.GroupType == SensorGroupType.ZoneReceiver)
         {
-            if (!CacheManager.GetUserSecurityActivate(sensor.UserId)) return 0;
+            if (!CacheManager.GetUserSecurityActivate(sensor.UserId)) return 1;
             var zoneStatus = IndexManager.GetZoneStatus(sensor.ZoneId, sensor.UserId);
             if (zoneStatus == SensorStatus.Danger || zoneStatus == SensorStatus.Warning)
             {
-                //spray ones
-                CacheManager.SetSpecialMessage(sensor.SensorId, 0, false);
+                //sprays active for two seconds deactives for two seconds and actives for two seconds
+                var zoneCount = CacheManager.GetZoneSensorValue(sensor.ZoneId);
+                if (zoneCount == 2 || zoneCount == 3 || zoneCount == 6)
+                {
+                    CacheManager.SetZoneSensorValue(sensor.ZoneId);
+                    return 1;
+                }
+
+                if (zoneCount < 6)
+                {
+                    CacheManager.SetZoneSensorValue(sensor.ZoneId);
+                    return 0;
+                }
+
                 return 1;
+
             }
-            if (zoneStatus == SensorStatus.Active || zoneStatus == SensorStatus.DeActive) return 0;
+            if (zoneStatus == SensorStatus.Active || zoneStatus == SensorStatus.DeActive) return 1;
             return null;
         }
 

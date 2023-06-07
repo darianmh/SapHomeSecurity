@@ -9,13 +9,13 @@
 <div class="row">
     <div class="col-md-12 p-3">
         <div class="btn-group">
-            <a asp-action="Spray" class="btn btn-danger">Spray</a>
-            <a asp-action="Alarm" asp-route-message="1" class="btn bg-warning">Alarm on</a>
-            <a asp-action="Alarm" asp-route-message="0" class="btn bg-warning">Alarm off</a>
-            <a asp-action="HouseAlarm" asp-route-alertLevel="High" class="btn bg-warning">Alarm high</a>
-            <a asp-action="HouseAlarm" asp-route-alertLevel="Medium" class="btn bg-warning">Alarm medium</a>
-            <a asp-action="HouseAlarm" asp-route-alertLevel="Low" class="btn bg-warning">Alarm low</a>
-            <a asp-action="HouseAlarm" asp-route-alertLevel="None" class="btn bg-warning">Alarm none</a>
+            <button onclick="Spray()" class="btn btn-danger">Spray</button>
+            <button onclick="Alarm(1)" class="btn bg-warning">Alarm on</button>
+            <button onclick="Alarm(0)" class="btn bg-warning">Alarm off</button>
+            <button onclick="HouseAlarm(1)" class="btn bg-warning">Alarm high</button>
+            <button onclick="HouseAlarm(1)" class="btn bg-warning">Alarm medium</button>
+            <button onclick="HouseAlarm(1)" class="btn bg-warning">Alarm low</button>
+            <button onclick="HouseAlarm(1)" class="btn bg-warning">Alarm none</button>
         </div>
     </div>
 </div>
@@ -76,6 +76,16 @@
         </table>
     </div>
 </div>
+<div class="row mt-5 overflow-scroll m-2 p-2 border border-1">
+    <p>Indexes</p>
+    <div id="Indexes" style="height: 200px !important;">
+    </div>
+</div>
+<div class="row mt-5 overflow-scroll m-2 p-2 border border-1">
+    <p>Send messages</p>
+    <div id="sendMessages" style="height: 200px !important;">
+    </div>
+</div>
 <div class="row mt-5">
     <p>Logs</p>
     @foreach (var item in Model)
@@ -93,6 +103,25 @@
 @section Scripts
     {
     <script>
+
+        function Spray() {
+            fetch('http://109.122.199.199:7080/Spray')
+                .then(x => console.log(x))
+                .then(y => console.log(y));
+        }
+
+        function Alarm(val) {
+            fetch('http://109.122.199.199:7080/Alarm?message=' + val)
+                .then(x => console.log(x))
+                .then(y => console.log(y));
+        }
+        function HouseAlarm(val) {
+            fetch('http://109.122.199.199:7080/HouseAlarm?alertLevel=' + val)
+                .then(x => console.log(x))
+                .then(y => console.log(y));
+        }
+
+
         webSocket();
         ClearLogs();
         function ClearLogs() {
@@ -101,8 +130,8 @@
                 for (var i = 0; i < logs.length; i++) {
                     logs[i].innerHTML = '';
                 }
-
-
+                document.getElementById('Indexes').innerHTML = '';
+                document.getElementById('sendMessages').innerHTML = '';
                 ClearLogs();
             }, 120000);
         }
@@ -126,6 +155,14 @@
 
                     if (message.includes('<Adl>')) {
                         SetSensorAlive(message)
+                    }
+                    if (message.includes('<Sed>')) {
+                        let p = document.createElement("p");
+                        p.innerText = message;
+                        document.getElementById('sendMessages').prepend(p);
+                    }
+                    if (message.includes('<Ind>')) {
+                        document.getElementById('Indexes').innerHTML = '<p>' + message + '</p>';
                     }
                 }
                 catch (e) {
@@ -203,6 +240,7 @@
                 }
             }
         }
+
 
     </script>
 }

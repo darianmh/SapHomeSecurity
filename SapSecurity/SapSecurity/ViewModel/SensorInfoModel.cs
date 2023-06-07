@@ -14,4 +14,5 @@ public class SensorInfoModel
     public int NeutralValue { get; set; }
     public bool IsDigital { get; set; }
     public SensorGroupType  GroupType { get; set; }
+    public bool IsActive { get; set; }
 }

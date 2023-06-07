@@ -57,12 +57,12 @@ namespace SapSecurity.Services.Caching
             {
                 if (user.WeightPercent == null)
                     sum += user.IndexValue;
+                else if (user.WeightPercent == 100)
+                {
+                    sum += user.IndexValue;
+                }
                 else
                 {
-                    if (user.SensorId == 30)
-                    {
-
-                    }
                     var now = DateTime.Now;
                     var defSeconds = (now - user.CreateDate).Seconds;
                     var tempIndex = (user.IndexValue * (int)user.WeightPercent / 100) * defSeconds;

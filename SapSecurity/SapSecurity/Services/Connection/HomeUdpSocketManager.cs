@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SapSecurity.Infrastructure;
@@ -128,7 +129,6 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
                 {
                     lastSensor = sensor;
                     lastValue = status;
-
                     //send alive time to admin
                     await userWebSocketManager.SendMessage($"{sensorId},{DateTime.Now:T}", SocketMessageType.Adl, sensor.UserId);
                     IndexManager.SetAliveMessage(sensor.SensorId);
@@ -141,10 +141,12 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
                 if (callBackMessage != null)
                 {
                     socket.Send(
-                        BitConverter.GetBytes((int)callBackMessage)
+                        Encoding.ASCII.GetBytes(callBackMessage!.ToString()!)
                         , endPoint);
                     CacheManager.SetSensorLastMessage(lastSensor.SensorId, (int)callBackMessage);
                     ConsoleExtension.WriteAppInfo($"Sent message to udp: {callBackMessage}");
+                    //send response message to admin
+                    await userWebSocketManager.SendMessage($"{lastSensor.SensorIdentifier},Send Message {callBackMessage} to {lastSensor.SensorIdentifier}", SocketMessageType.Sed, lastSensor.UserId);
                 }
             }
         }

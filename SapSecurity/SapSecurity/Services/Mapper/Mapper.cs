@@ -77,6 +77,7 @@ public class Mapper : IMapper
             IsDigital = sensor.SensorGroup.IsDigital,
             WeightPercent = sensor.SensorGroup.WeightPercent ?? 100,
             GroupType = sensor.SensorGroup.SensorGroupType,
+            IsActive = sensor.IsActive
         };
     }
 

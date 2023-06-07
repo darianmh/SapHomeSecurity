@@ -24,7 +24,6 @@ namespace SapSecurity.Admin.Controllers
         public async Task<IActionResult> Index(SensorDetail sensorDetail)
         {
             await _sensorDetailService.Update(sensorDetail);
-            CacheManager.SensorInfos = new BlockingCollection<SensorInfoModel>();
             ViewBag.Zones = await _zoneService.GetAllSelectList();
             ViewBag.Groups = await _sensorGroupService.GetAllSelectList();
             return View(sensorDetail);

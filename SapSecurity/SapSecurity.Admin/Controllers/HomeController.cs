@@ -28,22 +28,6 @@ namespace SapSecurity.Admin.Controllers
             return View(users);
         }
 
-        public async Task<IActionResult> Alarm(int message)
-        {
-            CacheManager.SetSpecialMessage(3, message, false);
-            return Ok();
-        }
-        public async Task<IActionResult> Spray()
-        {
-            CacheManager.SetSpecialMessage(5, 1, true);
-            return Ok();
-        }
-
-        public async Task<IActionResult> HouseAlarm(AlertLevel alertLevel)
-        {
-            _securityManager.SoundAlertAsync("1", alertLevel);
-            return Ok();
-        }
 
         public async Task<IActionResult> Sensors(string userId)
         {

@@ -143,12 +143,12 @@ namespace SapSecurity.Api.Controllers
             if (model.SecurityState)
             {
                 //door lock
-                CacheManager.SetSpecialMessage("202", 1, false);
+                CacheManager.SetSpecialMessage("202", 0, false);
             }
             else
             {
                 //dor lock
-                CacheManager.SetSpecialMessage("202", 0, false);
+                CacheManager.SetSpecialMessage("202", 1, false);
             }
 
             return Task.FromResult<IActionResult>(Ok());
@@ -163,7 +163,7 @@ namespace SapSecurity.Api.Controllers
         public Task<IActionResult> LockStatus()
         {
             var lastMessage = CacheManager.GetSensorLastMessage("202");
-            if (lastMessage == null || lastMessage == 0) return Task.FromResult<IActionResult>(Ok(false));
+            if (lastMessage == null || lastMessage == 1) return Task.FromResult<IActionResult>(Ok(false));
             return Task.FromResult<IActionResult>(Ok(true));
         }
 

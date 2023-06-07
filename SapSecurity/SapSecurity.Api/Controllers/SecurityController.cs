@@ -299,6 +299,13 @@ namespace SapSecurity.Api.Controllers
             _securityManager.SoundAlertAsync("1", alertLevel);
             return Ok();
         }
+
+        [HttpGet("ResetCache")]
+        public IActionResult ResetCache()
+        {
+            CacheManager.ClearCaches();
+            return Ok();
+        }
         #endregion
         #region Utilities
 

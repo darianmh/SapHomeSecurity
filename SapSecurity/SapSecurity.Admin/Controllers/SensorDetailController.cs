@@ -24,9 +24,10 @@ namespace SapSecurity.Admin.Controllers
         public async Task<IActionResult> Index(SensorDetail sensorDetail)
         {
             await _sensorDetailService.Update(sensorDetail);
-            ViewBag.Zones = await _zoneService.GetAllSelectList();
-            ViewBag.Groups = await _sensorGroupService.GetAllSelectList();
-            return View(sensorDetail);
+
+            await ClearCache();
+
+            return RedirectToAction("Index");
         }
         public async Task<IActionResult> Index(int sensorDetailId)
         {
@@ -35,5 +36,21 @@ namespace SapSecurity.Admin.Controllers
             var sensor = await _sensorDetailService.GetByIdAsync(sensorDetailId);
             return View(sensor);
         }
+
+
+
+        private async Task ClearCache()
+        {
+            try
+            {
+                var client = new HttpClient();
+                await client.GetAsync("http://109.122.199.199:7080/ResetCache");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
     }
 }

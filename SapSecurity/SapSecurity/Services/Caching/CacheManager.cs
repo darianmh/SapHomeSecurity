@@ -331,6 +331,13 @@ public static class CacheManager
         return IndexManager.GetSensorValue(sensorDetailId);
     }
 
+
+
+    public static void ClearCaches()
+    {
+        SensorInfos = new BlockingCollection<SensorInfoModel>();
+    }
+
     #endregion
     #region Utilities
 

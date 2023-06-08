@@ -283,7 +283,7 @@ public static class CacheManager
     {
         if (UserSecurityStatus.TryGetValue(userId, out var oldValue))
         {
-            if (!force && (oldValue == SensorStatus.Danger || oldValue == SensorStatus.Warning)) return;
+            if (!force && ((oldValue == SensorStatus.Danger || oldValue == SensorStatus.Warning) && sensorStatus == SensorStatus.Active)) return;
             if (oldValue != sensorStatus)
             {
                 UserSecurityStatus[userId] = sensorStatus;

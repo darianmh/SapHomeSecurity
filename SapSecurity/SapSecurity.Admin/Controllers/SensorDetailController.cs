@@ -27,7 +27,7 @@ namespace SapSecurity.Admin.Controllers
 
             await ClearCache();
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", new { sensorDetailId = sensorDetail.Id });
         }
         public async Task<IActionResult> Index(int sensorDetailId)
         {

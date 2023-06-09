@@ -59,9 +59,9 @@ public class SecurityManager : ISecurityManager
                 if (sensor.NeutralValue != 0)
                 {
 
-                    var dif = (sensor.NeutralValue - sensValue);
-                    var percent = Convert.ToInt32((dif* 100) / sensor.NeutralValue);
-                    index = Convert.ToInt32(percent * sensor.Weight) / 10;
+                    var dif = Math.Abs(sensor.NeutralValue - sensValue);
+                    var percent = Convert.ToInt32((dif * 100) / sensor.NeutralValue);
+                    index = Convert.ToInt32(Math.Abs(percent * sensor.Weight)) / 10;
                 }
             }
             IndexManager.SetIndex(sensor, index, sensValue);

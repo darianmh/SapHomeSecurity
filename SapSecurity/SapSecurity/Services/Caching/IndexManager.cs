@@ -15,7 +15,7 @@ namespace SapSecurity.Services.Caching
             {
                 foreach (var model in Index.Where(x => x.SensorId == sensor.SensorId))
                 {
-                    if (indexValue == sensor.NeutralValue)
+                    if (sensValue == sensor.NeutralValue)
                     {
                         var userStatus = CacheManager.GetAlertLevel(sensor.UserId);
                         if (userStatus == AlertLevel.High) return;
@@ -76,8 +76,7 @@ namespace SapSecurity.Services.Caching
 
         public static int GetZoneIndexValue(int zoneId)
         {
-            //var deleteDate = DateTime.Now.AddSeconds(SecurityConfig.LastLogSeconds * -1);
-            var zoneIndexes = Index.Where(x => x.ZoneId == zoneId /*&& x.CreateDate >= deleteDate*/).ToList();
+            var zoneIndexes = Index.Where(x => x.ZoneId == zoneId ).ToList();
             return zoneIndexes.Any() ? zoneIndexes.Sum(x => x.IndexValue) : 0;
         }
 

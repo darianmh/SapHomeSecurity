@@ -289,7 +289,7 @@ namespace SapSecurity.Api.Controllers
         [HttpGet("/Spray")]
         public async Task<IActionResult> Spray()
         {
-            CacheManager.SetSpecialMessage(5, 1, true);
+            CacheManager.SetSpecialMessage(5, 0, true);
             return Ok();
         }
 

@@ -2,6 +2,7 @@
 using SapSecurity.Model.Types;
 using SapSecurity.Services.Caching;
 using SapSecurity.Services.Connection;
+using SapSecurity.Services.Connection.Music;
 using SapSecurity.Services.Db;
 using SapSecurity.ViewModel;
 
@@ -18,6 +19,7 @@ public class SecurityManager : ISecurityManager
     private readonly IUserWebSocketManager _userWebSocketManager;
     private readonly IHomeUdpSocketManager _homeUdpSocketManager;
     private readonly IMapManager _mapManager;
+    private readonly IMusicUserSocketManager _musicUserSocketManager;
 
     #endregion
     #region Methods
@@ -65,11 +67,22 @@ public class SecurityManager : ISecurityManager
                 }
             }
             IndexManager.SetIndex(sensor, index, sensValue);
+            if (CacheManager.GetUserSecurityActivate(sensor.UserId))
+            {
+                if (sensor.NeutralValue != sensValue)
+                {
+                    if (sensor.SensorId == 30)
+                    {
+                        await _musicUserSocketManager.SendMessage(3);
+                    }
+                }
+            }
         }
         else
         {
             IndexManager.SetIndex(sensor, 0, sensValue);
         }
+
         //send indexes to user 
         await _userWebSocketManager.SendMessage(
             string.Join(" , ", IndexManager.Index.Select(x => $"{x.SensorId}: {x.IndexValue}")), SocketMessageType.Ind,
@@ -180,12 +193,12 @@ public class SecurityManager : ISecurityManager
             if (!CacheManager.GetUserSecurityActivate(sensor.UserId))
             {
                 var sensorStatus = IndexManager.GetSensorStatus(sensor.SensorId, sensor.ZoneId, sensor.UserId);
-                if (sensorStatus == SensorStatus.Danger || sensorStatus == SensorStatus.Warning) return 1;
-                return 0;
+                if (sensorStatus == SensorStatus.Danger || sensorStatus == SensorStatus.Warning) return 0;
+                return 1;
             }
             var homeStatus = IndexManager.GetUserHomeStatus(sensor.UserId);
-            if (homeStatus == SensorStatus.Danger || homeStatus == SensorStatus.Warning) return 1;
-            if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive) return 0;
+            if (homeStatus == SensorStatus.Danger || homeStatus == SensorStatus.Warning) return 0;
+            if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive) return 1;
             return null;
         }
 
@@ -272,7 +285,7 @@ public class SecurityManager : ISecurityManager
     #region Ctor
 
 
-    public SecurityManager(ISensorDetailService sensorDetailService, IUserSocketManager userSocketManager, IUserSmsManager userSmsManager, IUserWebSocketManager userWebSocketManager, IHomeUdpSocketManager homeUdpSocketManager, IMapManager mapManager)
+    public SecurityManager(ISensorDetailService sensorDetailService, IUserSocketManager userSocketManager, IUserSmsManager userSmsManager, IUserWebSocketManager userWebSocketManager, IHomeUdpSocketManager homeUdpSocketManager, IMapManager mapManager, IMusicUserSocketManager musicUserSocketManager)
     {
         _sensorDetailService = sensorDetailService;
         _userSocketManager = userSocketManager;
@@ -280,6 +293,7 @@ public class SecurityManager : ISecurityManager
         _userWebSocketManager = userWebSocketManager;
         _homeUdpSocketManager = homeUdpSocketManager;
         _mapManager = mapManager;
+        _musicUserSocketManager = musicUserSocketManager;
     }
 
 

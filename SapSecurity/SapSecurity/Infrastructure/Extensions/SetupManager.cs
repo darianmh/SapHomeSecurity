@@ -11,6 +11,7 @@ using SapSecurity.Services.Security;
 using SapSecurity.Services.Sms;
 using SapSecurity.Services.SocketManager;
 using SapSecurity.Data;
+using SapSecurity.Services.Connection.Music;
 
 namespace SapSecurity.Infrastructure.Extensions;
 
@@ -67,6 +68,7 @@ public static class SetupManager
         services.AddTransient<IUserSocketManager, UserSocketManager>();
         services.AddTransient<IUserWebSocketManager, UserWebSocketManager>();
         services.AddTransient<IMapManager, MapManager>();
+        services.AddTransient<IMusicUserSocketManager, MusicUserSocketManager>();
 
 
         //connection hub

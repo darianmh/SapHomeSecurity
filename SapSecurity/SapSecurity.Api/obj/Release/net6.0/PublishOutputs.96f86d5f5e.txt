@@ -5,6 +5,7 @@ E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubT
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\SapSecurity.Api.deps.json
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\SapSecurity.Api.runtimeconfig.json
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\SapSecurity.Api.pdb
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\Aspose.Imaging.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\Azure.Core.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\Azure.Identity.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\Dapper.dll
@@ -56,6 +57,7 @@ E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubT
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\System.Runtime.Caching.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\System.Security.Cryptography.ProtectedData.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\System.Security.Permissions.dll
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\System.Text.Encoding.CodePages.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\System.Text.Encodings.Web.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\System.Text.Json.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\System.Windows.Extensions.dll
@@ -66,10 +68,10 @@ E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubT
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
-E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\win\lib\net6.0\System.Drawing.Common.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
+E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\win\lib\net6.0\System.Text.Encoding.CodePages.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 E:\Team Projects\SapSecurity\SapSecurity\SapSecurity.Api\obj\Release\net6.0\PubTmp\Out\SapSecurity.dll

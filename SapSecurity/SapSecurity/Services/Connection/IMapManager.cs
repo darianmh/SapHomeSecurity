@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SapSecurity.Model.Types;
+using SapSecurity.Services.Caching;
 using SapSecurity.Services.Db;
 using SapSecurity.ViewModel;
 
@@ -28,7 +29,10 @@ public class MapManager : IMapManager
     {
         try
         {
-            if (alertLevel != AlertLevel.High) return;
+            if (alertLevel != AlertLevel.High)
+            {
+                return;
+            }
             var user = await _userService.GetByIdAsync(userId);
             if (user == null) return;
             var model = new MapNotificationModel
@@ -40,6 +44,7 @@ public class MapManager : IMapManager
                 PhoneNumber = user.PhoneNumber,
                 UserId = user.Id,
             };
+            CacheManager.AlertDate = DateTime.Now;
             var client = new HttpClient();
             client.DefaultRequestHeaders
                 .Accept

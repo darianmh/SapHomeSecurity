@@ -10,12 +10,15 @@
     <div class="col-md-12 p-3">
         <div class="btn-group">
             <button onclick="Spray()" class="btn btn-danger">Spray</button>
-            <button onclick="Alarm(1)" class="btn bg-warning">Alarm on</button>
-            <button onclick="Alarm(0)" class="btn bg-warning">Alarm off</button>
+            <button onclick="Alarm(0)" class="btn bg-warning">Alarm on</button>
+            <button onclick="Alarm(1)" class="btn bg-warning">Alarm off</button>
             <button onclick="HouseAlarm(1)" class="btn bg-warning">Alarm high</button>
             <button onclick="HouseAlarm(1)" class="btn bg-warning">Alarm medium</button>
             <button onclick="HouseAlarm(1)" class="btn bg-warning">Alarm low</button>
             <button onclick="HouseAlarm(1)" class="btn bg-warning">Alarm none</button>
+            <button onclick="Music(1)" class="btn bg-warning">Hello</button>
+            <button onclick="Music(2)" class="btn bg-warning">Bye</button>
+            <button onclick="Music(3)" class="btn bg-warning">Door</button>
         </div>
     </div>
 </div>
@@ -117,6 +120,11 @@
         }
         function HouseAlarm(val) {
             fetch('http://109.122.199.199:7080/HouseAlarm?alertLevel=' + val)
+                .then(x => console.log(x))
+                .then(y => console.log(y));
+        }
+        function Music(val) {
+            fetch('http://109.122.199.199:7080/music?id=' + val)
                 .then(x => console.log(x))
                 .then(y => console.log(y));
         }

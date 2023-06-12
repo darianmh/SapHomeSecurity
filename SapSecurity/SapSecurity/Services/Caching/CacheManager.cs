@@ -70,6 +70,8 @@ public static class CacheManager
         set => _sensorInfos = value;
     }
 
+    public static DateTime? AlertDate = null;
+
 
     private static readonly ConcurrentDictionary<int, SpecialMessageModel> SensorSpecialMessages = new();
 

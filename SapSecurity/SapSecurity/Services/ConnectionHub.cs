@@ -3,6 +3,7 @@ using SapSecurity.Services.Connection;
 using SapSecurity.Services.Security;
 using SapSecurity.Services.Tools;
 using SapSecurity.Data;
+using SapSecurity.Services.Connection.Music;
 
 namespace SapSecurity.Services;
 
@@ -13,6 +14,7 @@ public class ConnectionHub : IConnectionHub
     private readonly IHomeUdpSocketManager _homeUdpSocketManager;
     private readonly IUserSocketManager _userSocketManager;
     private readonly IUserWebSocketManager _userWebSocketManager;
+    private readonly IMusicUserSocketManager _musicUserSocketManager;
     private readonly ApplicationContext _context;
 
     #endregion
@@ -27,6 +29,8 @@ public class ConnectionHub : IConnectionHub
 
     public void RunRegisterSensorLogSocketUdpAsync()
         => _homeUdpSocketManager.SetupConnectionAsync();
+    public void RunMusicSocketAsync()
+        => _musicUserSocketManager.SetupConnectionAsync();
 
     public void RunRegisterUserSocketAsync()
     =>
@@ -55,12 +59,13 @@ public class ConnectionHub : IConnectionHub
         ISecurityManager securityManager,
         ApplicationContext context,
         IUserWebSocketManager userWebSocketManager,
-        IHomeUdpSocketManager homeUdpSocketManager)
+        IHomeUdpSocketManager homeUdpSocketManager, IMusicUserSocketManager musicUserSocketManager)
     {
         _userSocketManager = userSocketManager;
         _context = context;
         _userWebSocketManager = userWebSocketManager;
         _homeUdpSocketManager = homeUdpSocketManager;
+        _musicUserSocketManager = musicUserSocketManager;
     }
 
 

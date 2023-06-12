@@ -18,4 +18,8 @@
     <_ContentIncludedByDefault Remove="Views\SensorDetail\Index.cshtml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Aspose.Imaging" Version="23.5.1" />
+  </ItemGroup>
+
 </Project>

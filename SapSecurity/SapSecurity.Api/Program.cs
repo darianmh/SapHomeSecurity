@@ -11,7 +11,7 @@ builder.Services.AddSwaggerGen();
 
 
 var connectionString =
-    "Data Source=109.122.199.199;Initial Catalog=SapSecurity_Db;User Id=Sa;password=rasoul3744;Trusted_Connection=false;MultipleActiveResultSets=true;Encrypt=False;";
+    "Data Source=localhost;Initial Catalog=SapSecurity_Db;User Id=Sa;password=rasoul3744;Trusted_Connection=false;MultipleActiveResultSets=true;Encrypt=False;";
 
 builder.Services.SetupServices(connectionString);
 

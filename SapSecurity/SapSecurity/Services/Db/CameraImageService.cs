@@ -55,7 +55,7 @@ public class CameraImageService : ICameraImageService
             }
         }
 
-        toSend = toSend.OrderBy(x => x.Id).ToList();
+        //toSend = toSend.OrderBy(x => x.Id).ToList();
         return toSend.Select(x => _mapper.Map(x)).ToList();
     }
 

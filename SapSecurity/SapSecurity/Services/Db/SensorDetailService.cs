@@ -77,7 +77,8 @@ public class SensorDetailService : ISensorDetailService
         if (lastValue == null) return 100;
         if (!isDigital)
         {
-            var percent = (neutralValue - lastValue) / neutralValue * 100;
+            var percent = (Math.Abs((neutralValue - (int)lastValue))) / neutralValue * 100;
+            if (percent > 100) percent = 100;
             return Convert.ToInt32(percent);
         }
         else

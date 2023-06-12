@@ -81,6 +81,7 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
         }
         catch (Exception e)
         {
+            CacheManager.SetUserLockSendStatus("1", false);
             _logger.LogError(e.Message, e);
         }
     }

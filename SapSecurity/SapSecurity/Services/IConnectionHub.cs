@@ -17,6 +17,10 @@ public interface IConnectionHub
     /// <returns></returns>
     void RunRegisterSensorLogSocketUdpAsync();
     /// <summary>
+    /// user music socket
+    /// </summary>
+    void RunMusicSocketAsync();
+    /// <summary>
     /// run a socket for user connection
     /// </summary>
     /// <returns></returns>

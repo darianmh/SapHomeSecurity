@@ -1,9 +1,12 @@
+using System.Drawing;
+using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using SapSecurity.Model.Types;
 using SapSecurity.Services;
 using SapSecurity.Services.Caching;
 using SapSecurity.Services.Connection;
+using SapSecurity.Services.Connection.Music;
 using SapSecurity.Services.Db;
 using SapSecurity.Services.Security;
 using SapSecurity.ViewModel;
@@ -25,6 +28,7 @@ namespace SapSecurity.Api.Controllers
         private readonly ISecurityManager _securityManager;
         private readonly ICameraImageService _cameraImageService;
         private readonly IConnectionHub _connectionHub;
+        private readonly IMusicUserSocketManager _musicUserSocketManager;
 
 
 
@@ -37,6 +41,7 @@ namespace SapSecurity.Api.Controllers
             _connectionHub.Setup();
             _connectionHub.RunRegisterUserSocketAsync();
             _connectionHub.RunRegisterSensorLogSocketUdpAsync();
+            _connectionHub.RunMusicSocketAsync();
             return Ok();
         }
 
@@ -117,10 +122,12 @@ namespace SapSecurity.Api.Controllers
             CacheManager.ClearAllLogs(user);
             if (model.SecurityState)
             {
+                await _musicUserSocketManager.SendMessage(1);
                 _securityManager.RunSecurityTask(user);
             }
             else
             {
+                await _musicUserSocketManager.SendMessage(2);
                 _securityManager.StopSecurityTask(user);
             }
 
@@ -129,7 +136,12 @@ namespace SapSecurity.Api.Controllers
             return Ok();
         }
 
-
+        [HttpGet("/music")]
+        public async Task<IActionResult> PlayMusic(int id)
+        {
+            await _musicUserSocketManager.SendMessage(id);
+            return Ok();
+        }
 
         /// <summary>
         /// active or de active door lock
@@ -247,7 +259,10 @@ namespace SapSecurity.Api.Controllers
                 var name = $"{DateTime.Now:HH_mm_ss_ffff}_{image.Name}.jpg";
                 var imagePath = Path.Combine(path, name);
                 await using FileStream fs = System.IO.File.Create(imagePath);
-                await image.OpenReadStream().CopyToAsync(fs);
+                var stream = image.OpenReadStream();
+                await stream.CopyToAsync(fs);
+
+
                 await _cameraImageService.SaveNew("1", Path.Combine(folderPath, name));
             }
             //play alert sound
@@ -257,6 +272,73 @@ namespace SapSecurity.Api.Controllers
             return Ok();
         }
 
+        [HttpGet("/video")]
+        [ProducesResponseType(typeof(List<CameraImageViewModel>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> LastVideo()
+        {
+            var result = new List<CameraImageViewModel>();
+            try
+            {
+                var path = "C:/publish/Content/video";
+                var files = Directory.GetFiles(path);
+                if (files == null)
+                {
+                    Console.WriteLine("No file");
+                    return Ok(result);
+                }
+                var lastAlarm = CacheManager.AlertDate;
+                var count = 0;
+                files = files.OrderByDescending(x => x).ToArray();
+                Console.WriteLine($"files {files.Length}");
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        var name = file.Split('/').Last();
+                        name = name.Split('\\').Last();
+                        name = name.Replace("_file.mp4", String.Empty);
+                        var date = DateTime.ParseExact(name, "HH_mm_ss_ffff", CultureInfo.InvariantCulture);
+                        Console.WriteLine($"date: {date}");
+                        var pathVid = file.Replace("C:/publish/Content", "http://109.122.199.199:8090");
+                        pathVid = pathVid.Replace("\\\\", "/");
+                        var lastDate = DateTime.Now.AddSeconds(-60);
+                        if (lastAlarm == null)
+                        {
+                            if (date > lastDate)
+                            {
+                                result.Add(new CameraImageViewModel()
+                                {
+                                    DateTime = date,
+                                    Path = pathVid,
+                                    Id = count++
+                                });
+                            }
+                        }
+                        else
+                        {
+                            if (date > lastAlarm.Value.AddSeconds(-30) && date < lastAlarm.Value.AddSeconds(30))
+                            {
+                                result.Add(new CameraImageViewModel()
+                                {
+                                    DateTime = date,
+                                    Path = pathVid,
+                                    Id = count++
+                                });
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return Ok(result);
+        }
         [HttpGet("/image")]
         [ProducesResponseType(typeof(List<CameraImageViewModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> LastImages()
@@ -319,7 +401,7 @@ namespace SapSecurity.Api.Controllers
         #endregion
         #region Ctor
 
-        public SecurityController(ISensorGroupService sensorGroupService, IApplicationUserService applicationUserService, ISensorDetailService sensorDetailService, IUserWebSocketManager userWebSocketManager, IZoneService zoneService, ISecurityManager securityManager, ICameraImageService cameraImageService, IConnectionHub connectionHub)
+        public SecurityController(ISensorGroupService sensorGroupService, IApplicationUserService applicationUserService, ISensorDetailService sensorDetailService, IUserWebSocketManager userWebSocketManager, IZoneService zoneService, ISecurityManager securityManager, ICameraImageService cameraImageService, IConnectionHub connectionHub, IMusicUserSocketManager musicUserSocketManager)
         {
             _sensorGroupService = sensorGroupService;
             _applicationUserService = applicationUserService;
@@ -329,6 +411,7 @@ namespace SapSecurity.Api.Controllers
             _securityManager = securityManager;
             _cameraImageService = cameraImageService;
             _connectionHub = connectionHub;
+            _musicUserSocketManager = musicUserSocketManager;
         }
 
 

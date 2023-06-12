@@ -1,0 +1,15 @@
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\bin\Debug\net6.0\ImageUploadRaw.exe
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\bin\Debug\net6.0\ImageUploadRaw.deps.json
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\bin\Debug\net6.0\ImageUploadRaw.runtimeconfig.json
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\bin\Debug\net6.0\ImageUploadRaw.dll
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\bin\Debug\net6.0\ImageUploadRaw.pdb
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ImageUploadRaw.csproj.AssemblyReference.cache
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ImageUploadRaw.GeneratedMSBuildEditorConfig.editorconfig
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ImageUploadRaw.AssemblyInfoInputs.cache
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ImageUploadRaw.AssemblyInfo.cs
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ImageUploadRaw.csproj.CoreCompileInputs.cache
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ImageUploadRaw.dll
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\refint\ImageUploadRaw.dll
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ImageUploadRaw.pdb
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ImageUploadRaw.genruntimeconfig.cache
+E:\Team Projects\SapSecurity\ImageUploadRaw\ImageUploadRaw\obj\Debug\net6.0\ref\ImageUploadRaw.dll

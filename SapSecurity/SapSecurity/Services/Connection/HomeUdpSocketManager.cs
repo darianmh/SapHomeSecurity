@@ -82,7 +82,7 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
         catch (Exception e)
         {
             CacheManager.SetUserLockSendStatus("1", false);
-            _logger.LogError(e.Message, e);
+            _logger.LogError($"reading message => {e.Message}", e);
         }
     }
     #endregion
@@ -153,7 +153,7 @@ public class HomeUdpSocketManager : ConnectionManager, IHomeUdpSocketManager
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message, e);
+            _logger.LogError($"reading log => {e.Message}", e);
             throw;
         }
     }

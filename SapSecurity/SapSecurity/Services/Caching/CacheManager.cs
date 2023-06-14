@@ -303,7 +303,7 @@ public static class CacheManager
     {
         if (ChangedSensors.TryGetValue(userId, out var changes))
         {
-            ChangedSensors.Remove(userId, out _);
+            ChangedSensors[userId] = new List<int>();
             return SensorInfos.Where(z => changes.Any(c => c == z.SensorId)).ToList();
         }
 
@@ -313,7 +313,7 @@ public static class CacheManager
     {
         if (ChangedZones.TryGetValue(userId, out var changes))
         {
-            ChangedZones.Remove(userId, out _);
+            ChangedZones[userId] = new List<int>();
             return SensorInfos.Where(z => changes.Any(c => c == z.ZoneId)).ToList();
         }
         return new List<SensorInfoModel>();

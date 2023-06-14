@@ -1,4 +1,5 @@
-﻿using SapSecurity.Infrastructure;
+﻿using System.Collections.Concurrent;
+using SapSecurity.Infrastructure;
 using SapSecurity.Model.Types;
 using SapSecurity.ViewModel;
 
@@ -6,8 +7,8 @@ namespace SapSecurity.Services.Caching
 {
     public static class IndexManager
     {
-        public static readonly List<SensorIndexModel> Index = new();
-        private static readonly Dictionary<int, DateTime> LastActiveTime = new();
+        public static readonly BlockingCollection<SensorIndexModel> Index = new();
+        private static readonly ConcurrentDictionary<int, DateTime> LastActiveTime = new();
 
         public static void SetIndex(SensorInfoModel sensor, int indexValue, int? sensValue)
         {
@@ -122,7 +123,7 @@ namespace SapSecurity.Services.Caching
             }
             else
             {
-                LastActiveTime.Add(sensor, DateTime.Now);
+                LastActiveTime.TryAdd(sensor, DateTime.Now);
             }
         }
 

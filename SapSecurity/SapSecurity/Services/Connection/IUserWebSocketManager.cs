@@ -14,8 +14,9 @@ public interface IUserWebSocketManager : IConnectionManager
     /// <param name="message"></param>
     /// <param name="messageType"></param>
     /// <param name="userId"></param>
+    /// <param name="justAdmin"></param>
     /// <returns></returns>
-    Task SendMessage(string message, SocketMessageType messageType, string userId);
+    Task SendMessage(string message, SocketMessageType messageType, string userId, bool justAdmin = true);
 
     Task SetupConnectionAsync(ControllerContext finalizeCallBack, CancellationToken token);
 }

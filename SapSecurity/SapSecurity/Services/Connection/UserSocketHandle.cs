@@ -10,9 +10,12 @@ public static class UserSocketHandle
     private static List<UserSocketInfo>? _userMusicSocketInfos;
 
     public static List<UserSocketInfo> UserMusicSocketInfos => _userMusicSocketInfos ??= new List<UserSocketInfo>();
-    private static List<UserWebSocketInfo>? _userWebSocketInfos;
+    private static List<UserWebSocketInfo>? _adminWebSocketInfos;
 
     public static List<UserWebSocketInfo> UserWebSocketInfos => _userWebSocketInfos ??= new List<UserWebSocketInfo>();
+    private static List<UserWebSocketInfo>? _userWebSocketInfos;
+
+    public static List<UserWebSocketInfo> AdminWebSocketInfos => _adminWebSocketInfos ??= new List<UserWebSocketInfo>();
 
     public static int LastMusic = 0;
 }

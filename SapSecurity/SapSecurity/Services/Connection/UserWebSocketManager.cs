@@ -31,14 +31,34 @@ public class UserWebSocketManager : ConnectionManager, IUserWebSocketManager
         return false;
     }
 
-    public async Task SendMessage(string message, SocketMessageType messageType, string userId)
+    public async Task SendMessage(string message, SocketMessageType messageType, string userId, bool justAdmin = true)
     {
         try
         {
             var toRemove = new List<UserWebSocketInfo>();
             if (UserSocketHandle.UserWebSocketInfos.Any(x => x.UserId == userId))
             {
-                foreach (var info in UserSocketHandle.UserWebSocketInfos.Where(x => x.UserId == userId))
+                if (!justAdmin)
+                {
+                    foreach (var info in UserSocketHandle.UserWebSocketInfos.Where(x => x.UserId == userId))
+                    {
+                        try
+                        {
+                            await info.Handler.SendAsync(
+                                new ArraySegment<byte>(Encoding.ASCII.GetBytes(messageType.GetMessageInFormat(message))), WebSocketMessageType.Text, true,
+                                CancellationToken.None);
+                        }
+                        catch (Exception e)
+                        {
+                            toRemove.Add(info);
+                            _logger.LogError(e.Message, e);
+                            DisconnectCallBack(info);
+                        }
+                    }
+                    toRemove.ForEach(x => UserSocketHandle.UserWebSocketInfos.Remove(x));
+                }
+                toRemove = new List<UserWebSocketInfo>();
+                foreach (var info in UserSocketHandle.AdminWebSocketInfos.Where(x => x.UserId == userId))
                 {
                     try
                     {
@@ -53,7 +73,7 @@ public class UserWebSocketManager : ConnectionManager, IUserWebSocketManager
                         DisconnectCallBack(info);
                     }
                 }
-                toRemove.ForEach(x => UserSocketHandle.UserWebSocketInfos.Remove(x));
+                toRemove.ForEach(x => UserSocketHandle.AdminWebSocketInfos.Remove(x));
 
             }
         }
@@ -142,6 +162,11 @@ public class UserWebSocketManager : ConnectionManager, IUserWebSocketManager
     {
         var info = new UserWebSocketInfo(socket, id, socketId);
         UserSocketHandle.UserWebSocketInfos.Add(info);
+    }
+    private void SetAdminInfo(string id, WebSocket socket, Guid socketId)
+    {
+        var info = new UserWebSocketInfo(socket, id, socketId);
+        UserSocketHandle.AdminWebSocketInfos.Add(info);
     }
 
     #endregion

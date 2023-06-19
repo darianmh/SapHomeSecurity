@@ -31,13 +31,23 @@ public class MusicUserSocketManager : ConnectionManager, IMusicUserSocketManager
     {
         try
         {
-            if (message == UserSocketHandle.LastMusic) return;
+            if (message == UserSocketHandle.LastMusic && UserSocketHandle.LastMusicDate < DateTime.Now.AddSeconds(30)) return;
             UserSocketHandle.LastMusic = message;
             var all = UserSocketHandle.UserMusicSocketInfos;
+            var toRemove = new List<UserSocketInfo>();
             foreach (var info in all)
             {
-                await info.Handler.SendAsync(Encoding.UTF8.GetBytes(message.ToString()), SocketFlags.None);
+                try
+                {
+
+                    await info.Handler.SendAsync(Encoding.UTF8.GetBytes(message.ToString()), SocketFlags.None);
+                }
+                catch (Exception e)
+                {
+                    toRemove.Add(info);
+                }
             }
+            toRemove.ForEach(x => UserSocketHandle.UserMusicSocketInfos.Remove(x));
         }
         catch (Exception e)
         {

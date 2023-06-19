@@ -180,11 +180,11 @@ public class SecurityManager : ISecurityManager
         {
             if (!CacheManager.GetUserSecurityActivate(sensor.UserId)) return 0;
             var homeStatus = IndexManager.GetUserHomeStatus(sensor.UserId);
-            if (homeStatus == SensorStatus.Danger || homeStatus == SensorStatus.Warning)
+            if (homeStatus == SensorStatus.Danger)
             {
                 return 1;
             }
-            if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive) return 0;
+            if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive || homeStatus == SensorStatus.Warning) return 0;
             return null;
         }
         //like critical alarm
@@ -231,7 +231,7 @@ public class SecurityManager : ISecurityManager
         var changedSensors = CacheManager.GetChangedSensors(userId);
         foreach (var changedSensor in changedSensors)
         {
-            await _userWebSocketManager.SendMessage($"{changedSensor.SensorId},{(int)IndexManager.GetSensorStatus(changedSensor.SensorId, changedSensor.ZoneId, userId)},{_sensorDetailService.GetSensPercent(CacheManager.GetSensorsLastValue(changedSensor.SensorId), changedSensor.IsDigital, changedSensor.NeutralValue)}", SocketMessageType.SNo, userId,false);
+            await _userWebSocketManager.SendMessage($"{changedSensor.SensorId},{(int)IndexManager.GetSensorStatus(changedSensor.SensorId, changedSensor.ZoneId, userId)},{_sensorDetailService.GetSensPercent(CacheManager.GetSensorsLastValue(changedSensor.SensorId), changedSensor.IsDigital, changedSensor.NeutralValue)}", SocketMessageType.SNo, userId, false);
         }
         CacheManager.SetUserLockSendStatus(userId, false);
     }

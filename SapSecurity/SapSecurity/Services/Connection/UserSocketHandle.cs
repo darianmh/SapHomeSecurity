@@ -18,4 +18,5 @@ public static class UserSocketHandle
     private static List<UserWebSocketInfo>? _adminWebSocketInfos;
 
     public static int LastMusic = 0;
+    public static DateTime LastMusicDate = DateTime.Now;
 }

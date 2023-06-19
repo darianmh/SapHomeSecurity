@@ -122,12 +122,12 @@ namespace SapSecurity.Api.Controllers
             CacheManager.ClearAllLogs(user);
             if (model.SecurityState)
             {
-                await _musicUserSocketManager.SendMessage(1);
+                await _musicUserSocketManager.SendMessage(2);
                 _securityManager.RunSecurityTask(user);
             }
             else
             {
-                await _musicUserSocketManager.SendMessage(2);
+                await _musicUserSocketManager.SendMessage(1);
                 _securityManager.StopSecurityTask(user);
             }
 
@@ -136,12 +136,6 @@ namespace SapSecurity.Api.Controllers
             return Ok();
         }
 
-        [HttpGet("/music")]
-        public async Task<IActionResult> PlayMusic(int id)
-        {
-            await _musicUserSocketManager.SendMessage(id);
-            return Ok();
-        }
 
         /// <summary>
         /// active or de active door lock
@@ -298,7 +292,6 @@ namespace SapSecurity.Api.Controllers
                         name = name.Split('\\').Last();
                         name = name.Replace("_file.mp4", String.Empty);
                         var date = DateTime.ParseExact(name, "HH_mm_ss_ffff", CultureInfo.InvariantCulture);
-                        Console.WriteLine($"date: {date}");
                         var pathVid = file.Replace("C:/publish/Content", "http://109.122.199.199:8090");
                         pathVid = pathVid.Replace("\\\\", "/");
                         var lastDate = DateTime.Now.AddSeconds(-60);
@@ -362,6 +355,12 @@ namespace SapSecurity.Api.Controllers
 
 
 
+        [HttpGet("/music")]
+        public async Task<IActionResult> PlayMusic(int id)
+        {
+            await _musicUserSocketManager.SendMessage(id);
+            return Ok();
+        }
         [HttpGet("/Alarm")]
         public async Task<IActionResult> Alarm(int message)
         {

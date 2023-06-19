@@ -197,8 +197,8 @@ public class SecurityManager : ISecurityManager
                 return 1;
             }
             var homeStatus = IndexManager.GetUserHomeStatus(sensor.UserId);
-            if (homeStatus == SensorStatus.Danger || homeStatus == SensorStatus.Warning) return 0;
-            if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive) return 1;
+            if (homeStatus == SensorStatus.Danger) return 0;
+            if (homeStatus == SensorStatus.Active || homeStatus == SensorStatus.DeActive || homeStatus == SensorStatus.Warning) return 1;
             return null;
         }
 

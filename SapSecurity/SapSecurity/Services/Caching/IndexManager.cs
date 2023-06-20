@@ -12,14 +12,22 @@ namespace SapSecurity.Services.Caching
 
         public static void SetIndex(SensorInfoModel sensor, int indexValue, int? sensValue)
         {
+            var userStatus = CacheManager.GetAlertLevel(sensor.UserId);
             if (Index.Any(x => x.SensorId == sensor.SensorId))
             {
                 foreach (var model in Index.Where(x => x.SensorId == sensor.SensorId))
                 {
                     if (sensValue == sensor.NeutralValue)
                     {
-                        var userStatus = CacheManager.GetAlertLevel(sensor.UserId);
                         if (userStatus == AlertLevel.High) return;
+
+                        //اگر در حالت خطر نباشد می تواند خنثی شود و زمان ست می شود
+                        model.CreateDate = DateTime.Now;
+                    }
+
+                    if (model.IndexValue != indexValue)
+                    {
+                        model.CreateDate = DateTime.Now;
                     }
 
                     if (model.SensorValue != sensValue)
@@ -29,7 +37,7 @@ namespace SapSecurity.Services.Caching
                     }
                     model.SensorValue = sensValue;
                     model.IndexValue = indexValue;
-                    model.CreateDate = DateTime.Now;
+
                 }
             }
             else
@@ -42,11 +50,36 @@ namespace SapSecurity.Services.Caching
 
         public static int GetSensorIndex(int sensorId)
         {
-            return Index.FirstOrDefault(x => x.SensorId == sensorId)?.IndexValue ?? 0;
+            var sensor = Index.FirstOrDefault(x => x.SensorId == sensorId);
+            return sensor != null ? GetSensorIndex(sensor) : 0;
+        }
+        /// <summary>
+        /// دریافت مقدار شاخص هر سنسور به صورت تکی
+        /// </summary>
+        /// <param name="sensor"></param>
+        /// <returns></returns>
+        public static int GetSensorIndex(SensorIndexModel sensor)
+        {
+            var index = sensor.IndexValue;
+            //return sensor.IndexValue;
+            if (sensor.WeightPercent == null)
+                return index;
+            else if (sensor.WeightPercent == 100)
+            {
+                return index;
+            }
+            else
+            {
+                var now = DateTime.Now;
+                var defSeconds = (now - sensor.CreateDate).Seconds;
+                var tempIndex = (index * (int)sensor.WeightPercent / 100) * defSeconds;
+                if (tempIndex > 100) tempIndex = 100;
+                return tempIndex;
+            }
         }
         public static int? GetSensorValue(int sensorId)
         {
-            return Index.FirstOrDefault(x => x.SensorId == sensorId)?.SensorValue;
+            return Index.FirstOrDefault(x => x.SensorId == sensorId)?.SensorValue ?? 0;
         }
 
         public static int GetUserIndexValue(string userId)
@@ -56,20 +89,7 @@ namespace SapSecurity.Services.Caching
             var sum = 0;
             foreach (var user in userIndexes)
             {
-                if (user.WeightPercent == null)
-                    sum += user.IndexValue;
-                else if (user.WeightPercent == 100)
-                {
-                    sum += user.IndexValue;
-                }
-                else
-                {
-                    var now = DateTime.Now;
-                    var defSeconds = (now - user.CreateDate).Seconds;
-                    var tempIndex = (user.IndexValue * (int)user.WeightPercent / 100) * defSeconds;
-                    if (tempIndex > 100) tempIndex = 100;
-                    sum += tempIndex;
-                }
+                sum += GetSensorIndex(user);
             }
 
             return sum;
@@ -77,8 +97,8 @@ namespace SapSecurity.Services.Caching
 
         public static int GetZoneIndexValue(int zoneId)
         {
-            var zoneIndexes = Index.Where(x => x.ZoneId == zoneId ).ToList();
-            return zoneIndexes.Any() ? zoneIndexes.Sum(x => x.IndexValue) : 0;
+            var zoneIndexes = Index.Where(x => x.ZoneId == zoneId).ToList();
+            return zoneIndexes.Any() ? zoneIndexes.Sum(GetSensorIndex) : 0;
         }
 
         public static SensorStatus GetUserHomeStatus(string userId)

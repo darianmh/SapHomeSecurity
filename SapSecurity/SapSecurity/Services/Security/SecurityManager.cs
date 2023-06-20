@@ -1,4 +1,5 @@
-﻿using SapSecurity.Model;
+﻿using SapSecurity.Infrastructure;
+using SapSecurity.Model;
 using SapSecurity.Model.Types;
 using SapSecurity.Services.Caching;
 using SapSecurity.Services.Connection;
@@ -61,9 +62,11 @@ public class SecurityManager : ISecurityManager
                 if (sensor.NeutralValue != 0)
                 {
 
+                    //اختلاف مقدار دریافتی با مقدار خنثی
                     var dif = Math.Abs(sensor.NeutralValue - sensValue);
                     var percent = Convert.ToInt32((dif * 100) / sensor.NeutralValue);
                     index = Convert.ToInt32(Math.Abs(percent * sensor.Weight)) / 10;
+                    if (index > SecurityConfig.IndexDangerValue) index = SecurityConfig.IndexDangerValue;
                 }
             }
             IndexManager.SetIndex(sensor, index, sensValue);
@@ -85,7 +88,7 @@ public class SecurityManager : ISecurityManager
 
         //send indexes to user 
         await _userWebSocketManager.SendMessage(
-            string.Join(" , ", IndexManager.Index.Select(x => $"{x.SensorId}: {x.IndexValue}")), SocketMessageType.Ind,
+            string.Join(" , ", CacheManager.SensorInfos.GroupBy(x=>x.SensorId).Select(x => $"{x.First().SensorId}: {IndexManager.GetSensorIndex(x.First().SensorId)}")), SocketMessageType.Ind,
             sensor.UserId);
         await MeasureDangerPossibility(sensor.UserId);
 

@@ -31,7 +31,7 @@ public class MusicUserSocketManager : ConnectionManager, IMusicUserSocketManager
     {
         try
         {
-            if (message == UserSocketHandle.LastMusic && UserSocketHandle.LastMusicDate < DateTime.Now.AddSeconds(30)) return;
+            if (message == UserSocketHandle.LastMusic && UserSocketHandle.LastMusicDate.AddSeconds(30) < DateTime.Now) return;
             UserSocketHandle.LastMusic = message;
             var all = UserSocketHandle.UserMusicSocketInfos;
             var toRemove = new List<UserSocketInfo>();
